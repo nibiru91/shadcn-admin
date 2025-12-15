@@ -99,6 +99,26 @@ export const companiesColumns: ColumnDef<Company>[] = [
 		meta: { thClassName: 'hidden', tdClassName: 'hidden', hideInViewOptions: true },
 	},
 	{
+		id: 'piva_cf',
+		accessorFn: (row) => {
+			const piva = row.partita_iva || ''
+			const cf = row.codice_fiscale || ''
+			return `${piva} ${cf}`.trim()
+		},
+		header: 'P.IVA / Codice Fiscale',
+		enableSorting: false,
+		enableHiding: false,
+		meta: { thClassName: 'hidden', tdClassName: 'hidden', hideInViewOptions: true },
+		filterFn: (row, id, value) => {
+			if (!value || typeof value !== 'string') return true
+			const searchValue = value.toLowerCase().trim()
+			if (!searchValue) return true
+			const piva = (row.original.partita_iva || '').toLowerCase()
+			const cf = (row.original.codice_fiscale || '').toLowerCase()
+			return piva.includes(searchValue) || cf.includes(searchValue)
+		},
+	},
+	{
 		accessorKey: 'partita_iva',
 		header: ({ column }) => (
 			<DataTableColumnHeader column={column} title='P.IVA' />
@@ -130,6 +150,11 @@ export const companiesColumns: ColumnDef<Company>[] = [
 			<DataTableColumnHeader column={column} title='Città' />
 		),
 		meta: { label: 'Città' },
+		filterFn: (row, id, value) => {
+			if (!Array.isArray(value) || value.length === 0) return true
+			const cityValue = row.getValue<string | null>(id) || ''
+			return value.includes(cityValue)
+		},
 	},
 	{
 		accessorKey: 'province',
@@ -137,6 +162,11 @@ export const companiesColumns: ColumnDef<Company>[] = [
 			<DataTableColumnHeader column={column} title='Prov' />
 		),
 		meta: { label: 'Prov' },
+		filterFn: (row, id, value) => {
+			if (!Array.isArray(value) || value.length === 0) return true
+			const provinceValue = row.getValue<string | null>(id) || ''
+			return value.includes(provinceValue)
+		},
 	},
 	{
 		accessorKey: 'country',
@@ -144,6 +174,11 @@ export const companiesColumns: ColumnDef<Company>[] = [
 			<DataTableColumnHeader column={column} title='Paese' />
 		),
 		meta: { label: 'Paese' },
+		filterFn: (row, id, value) => {
+			if (!Array.isArray(value) || value.length === 0) return true
+			const countryValue = row.getValue<string | null>(id) || ''
+			return value.includes(countryValue)
+		},
 	},
 	{
 		id: 'actions',

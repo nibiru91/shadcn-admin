@@ -14,6 +14,7 @@ import {
 type DataTableBulkActionsProps<TData> = {
   table: Table<TData>
   entityName: string
+  entityNamePlural?: string
   children: React.ReactNode
 }
 
@@ -30,17 +31,21 @@ type DataTableBulkActionsProps<TData> = {
 export function DataTableBulkActions<TData>({
   table,
   entityName,
+  entityNamePlural,
   children,
 }: DataTableBulkActionsProps<TData>): React.ReactNode | null {
   const selectedRows = table.getFilteredSelectedRowModel().rows
   const selectedCount = selectedRows.length
   const toolbarRef = useRef<HTMLDivElement>(null)
   const [announcement, setAnnouncement] = useState('')
+  const pluralName =
+    entityNamePlural ?? `${entityName}${entityName.endsWith('a') ? 'e' : 's'}`
+  const label = selectedCount === 1 ? entityName : pluralName
 
   // Announce selection changes to screen readers
   useEffect(() => {
     if (selectedCount > 0) {
-      const message = `${selectedCount} ${entityName}${selectedCount > 1 ? 's' : ''} selected. Bulk actions toolbar is available.`
+      const message = `${selectedCount} ${label} selezionat${selectedCount === 1 ? 'a' : 'e'}. Barra delle azioni di gruppo disponibile.`
 
       // Use queueMicrotask to defer state update and avoid cascading renders
       queueMicrotask(() => {
@@ -138,7 +143,7 @@ export function DataTableBulkActions<TData>({
       <div
         ref={toolbarRef}
         role='toolbar'
-        aria-label={`Bulk actions for ${selectedCount} selected ${entityName}${selectedCount > 1 ? 's' : ''}`}
+        aria-label={`Azioni di gruppo per ${selectedCount} ${label} selezionat${selectedCount === 1 ? 'a' : 'e'}`}
         aria-describedby='bulk-actions-description'
         tabIndex={-1}
         onKeyDown={handleKeyDown}
@@ -163,15 +168,15 @@ export function DataTableBulkActions<TData>({
                 size='icon'
                 onClick={handleClearSelection}
                 className='size-6 rounded-full'
-                aria-label='Clear selection'
-                title='Clear selection (Escape)'
+              aria-label='Deseleziona'
+              title='Deseleziona (Esc)'
               >
                 <X />
-                <span className='sr-only'>Clear selection</span>
+              <span className='sr-only'>Deseleziona</span>
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Clear selection (Escape)</p>
+            <p>Deseleziona (Esc)</p>
             </TooltipContent>
           </Tooltip>
 
@@ -188,15 +193,14 @@ export function DataTableBulkActions<TData>({
             <Badge
               variant='default'
               className='min-w-8 rounded-lg'
-              aria-label={`${selectedCount} selected`}
+              aria-label={`${selectedCount} selezionat${selectedCount === 1 ? 'a' : 'e'}`}
             >
               {selectedCount}
             </Badge>{' '}
             <span className='hidden sm:inline'>
-              {entityName}
-              {selectedCount > 1 ? 's' : ''}
+              {label}
             </span>{' '}
-            selected
+            selezionat{selectedCount === 1 ? 'a' : 'e'}
           </div>
 
           <Separator

@@ -57,14 +57,16 @@ export function CompaniesTable({ data, search, navigate }: DataTableProps) {
     navigate,
     pagination: { defaultPage: 1, defaultPageSize: 10 },
     globalFilter: { enabled: false },
-    columnFilters: [
-      { columnId: 'ragione_sociale', searchKey: 'ragione_sociale', type: 'string' },
-      { columnId: 'partita_iva', searchKey: 'partita_iva', type: 'string' },
-      { columnId: 'codice_fiscale', searchKey: 'codice_fiscale', type: 'string' },
-      { columnId: 'is_customer', searchKey: 'is_customer', type: 'boolean' },
-      { columnId: 'is_supplier', searchKey: 'is_supplier', type: 'boolean' },
-      { columnId: 'tipologia', searchKey: 'tipologia', type: 'array' },
-    ],
+      columnFilters: [
+        { columnId: 'ragione_sociale', searchKey: 'ragione_sociale', type: 'string' },
+        { columnId: 'piva_cf', searchKey: 'piva_cf', type: 'string' },
+        { columnId: 'is_customer', searchKey: 'is_customer', type: 'boolean' },
+        { columnId: 'is_supplier', searchKey: 'is_supplier', type: 'boolean' },
+        { columnId: 'tipologia', searchKey: 'tipologia', type: 'array' },
+        { columnId: 'city', searchKey: 'city', type: 'array' },
+        { columnId: 'province', searchKey: 'province', type: 'array' },
+        { columnId: 'country', searchKey: 'country', type: 'array' },
+      ],
   })
 
   // eslint-disable-next-line react-hooks/incompatible-library
@@ -96,6 +98,32 @@ export function CompaniesTable({ data, search, navigate }: DataTableProps) {
     ensurePageInRange(table.getPageCount())
   }, [table, ensurePageInRange])
 
+  // Calcola le opzioni dinamiche dai valori unici nel DB
+  const cityColumn = table.getColumn('city')
+  const provinceColumn = table.getColumn('province')
+  const countryColumn = table.getColumn('country')
+
+  const cityOptions = cityColumn
+    ? Array.from(cityColumn.getFacetedUniqueValues().keys())
+        .filter((value): value is string => value !== null && value !== undefined && value !== '')
+        .sort()
+        .map((value) => ({ label: value, value }))
+    : []
+
+  const provinceOptions = provinceColumn
+    ? Array.from(provinceColumn.getFacetedUniqueValues().keys())
+        .filter((value): value is string => value !== null && value !== undefined && value !== '')
+        .sort()
+        .map((value) => ({ label: value, value }))
+    : []
+
+  const countryOptions = countryColumn
+    ? Array.from(countryColumn.getFacetedUniqueValues().keys())
+        .filter((value): value is string => value !== null && value !== undefined && value !== '')
+        .sort()
+        .map((value) => ({ label: value, value }))
+    : []
+
   return (
     <div
       className={cn(
@@ -108,8 +136,7 @@ export function CompaniesTable({ data, search, navigate }: DataTableProps) {
         searchPlaceholder='Filtra ragione sociale...'
         searchKey='ragione_sociale'
         textFilters={[
-          { columnId: 'partita_iva', placeholder: 'Filtra P.IVA...' },
-          { columnId: 'codice_fiscale', placeholder: 'Filtra Codice Fiscale...' },
+          { columnId: 'piva_cf', placeholder: 'Filtra P.IVA / Codice Fiscale...' },
         ]}
         filters={[
           {
@@ -120,6 +147,33 @@ export function CompaniesTable({ data, search, navigate }: DataTableProps) {
               { label: 'Fornitore', value: 'fornitore' },
             ],
           },
+          ...(cityOptions.length > 0
+            ? [
+                {
+                  columnId: 'city',
+                  title: 'Città',
+                  options: cityOptions,
+                },
+              ]
+            : []),
+          ...(provinceOptions.length > 0
+            ? [
+                {
+                  columnId: 'province',
+                  title: 'Provincia',
+                  options: provinceOptions,
+                },
+              ]
+            : []),
+          ...(countryOptions.length > 0
+            ? [
+                {
+                  columnId: 'country',
+                  title: 'Paese',
+                  options: countryOptions,
+                },
+              ]
+            : []),
         ]}
       />
       <div className='overflow-hidden rounded-md border'>
@@ -181,7 +235,7 @@ export function CompaniesTable({ data, search, navigate }: DataTableProps) {
                   colSpan={columns.length}
                   className='h-24 text-center'
                 >
-                  No results.
+                  Nessun risultato.
                 </TableCell>
               </TableRow>
             )}

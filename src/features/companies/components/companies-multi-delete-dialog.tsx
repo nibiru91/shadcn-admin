@@ -44,10 +44,14 @@ export function CompaniesMultiDeleteDialog<TData>({
       return
     }
 
-    const promise = supabase
-      .from('companies')
-      .update({ is_active: false })
-      .in('id', ids as (number | string)[])
+    const promise = Promise.resolve().then(async () => {
+      const { error } = await supabase
+        .from('companies')
+        .update({ is_active: false })
+        .in('id', ids as (number | string)[])
+        .select()
+      if (error) throw error
+    })
 
     toast.promise(promise, {
       loading: 'Eliminazione aziende...',
@@ -94,7 +98,7 @@ export function CompaniesMultiDeleteDialog<TData>({
           </Label>
 
           <Alert variant='destructive'>
-            <AlertTitle>DANGER ZONE</AlertTitle>
+            <AlertTitle>ZONA PERICOLO</AlertTitle>
             <AlertDescription>
               Attenzione, questa operazione non può essere annullata.
             </AlertDescription>

@@ -125,11 +125,11 @@ export function CompaniesInviteDialog({
               name='desc'
               render={({ field }) => (
                 <FormItem className=''>
-                  <FormLabel>Description (optional)</FormLabel>
+                  <FormLabel>Descrizione (opzionale)</FormLabel>
                   <FormControl>
                     <Textarea
                       className='resize-none'
-                      placeholder='Add a personal note to your invitation (optional)'
+                      placeholder='Aggiungi una nota personale all’invito (opzionale)'
                       {...field}
                     />
                   </FormControl>
@@ -141,10 +141,10 @@ export function CompaniesInviteDialog({
         </Form>
         <DialogFooter className='gap-y-2'>
           <DialogClose asChild>
-            <Button variant='outline'>Cancel</Button>
+            <Button variant='outline'>Annulla</Button>
           </DialogClose>
           <Button type='submit' form='user-invite-form'>
-            Invite <Send />
+            Invita <Send />
           </Button>
         </DialogFooter>
       </DialogContent>
