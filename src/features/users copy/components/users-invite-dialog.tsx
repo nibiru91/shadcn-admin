@@ -24,7 +24,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { SelectDropdown } from '@/components/select-dropdown'
-import { useEnums } from '@/context/enums-provider'
+import { roles } from '../data/data'
 
 const formSchema = z.object({
   email: z.email({
@@ -46,8 +46,6 @@ export function UsersInviteDialog({
   open,
   onOpenChange,
 }: UserInviteDialogProps) {
-  const { ruoli: ruoliValues } = useEnums()
-  
   const form = useForm<UserInviteForm>({
     resolver: zodResolver(formSchema),
     defaultValues: { email: '', role: '', desc: '' },
@@ -110,9 +108,9 @@ export function UsersInviteDialog({
                     defaultValue={field.value}
                     onValueChange={field.onChange}
                     placeholder='Select a role'
-                    items={ruoliValues.map((ruolo) => ({
-                      label: ruolo,
-                      value: ruolo,
+                    items={roles.map(({ label, value }) => ({
+                      label,
+                      value,
                     }))}
                   />
                   <FormMessage />

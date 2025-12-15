@@ -22,11 +22,10 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { DataTablePagination, DataTableToolbar } from '@/components/data-table'
-import { useEnums } from '@/context/enums-provider'
+import { roles } from '../data/data'
 import { type User } from '../data/schema'
 import { DataTableBulkActions } from './data-table-bulk-actions'
 import { usersColumns as columns } from './users-columns'
-import { useUsers } from './users-provider'
 
 type DataTableProps = {
   data: User[]
@@ -35,14 +34,14 @@ type DataTableProps = {
 }
 
 export function UsersTable({ data, search, navigate }: DataTableProps) {
-  const { setOpen, setCurrentRow } = useUsers()
   // Local UI-only states
   const [rowSelection, setRowSelection] = useState({})
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [sorting, setSorting] = useState<SortingState>([])
 
-  // Usa gli enums dal contesto globale
-  const { ruoli: ruoliValues } = useEnums()
+  // Local state management for table (uncomment to use local-only state, not synced with URL)
+  // const [columnFilters, onColumnFiltersChange] = useState<ColumnFiltersState>([])
+  // const [pagination, onPaginationChange] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 })
 
   // Synced with URL states (keys/defaults mirror users route search schema)
   const {
@@ -57,10 +56,10 @@ export function UsersTable({ data, search, navigate }: DataTableProps) {
     pagination: { defaultPage: 1, defaultPageSize: 10 },
     globalFilter: { enabled: false },
     columnFilters: [
-      // Filtro testo per nome/cognome
-      { columnId: 'fullName', searchKey: 'fullName', type: 'string' },
-      // Filtro a selezione multipla per ruolo
-      { columnId: 'ruolo', searchKey: 'ruolo', type: 'array' },
+      // username per-column text filter
+      { columnId: 'username', searchKey: 'username', type: 'string' },
+      { columnId: 'status', searchKey: 'status', type: 'array' },
+      { columnId: 'role', searchKey: 'role', type: 'array' },
     ],
   })
 
@@ -102,16 +101,23 @@ export function UsersTable({ data, search, navigate }: DataTableProps) {
     >
       <DataTableToolbar
         table={table}
-        searchPlaceholder='Filtra per nome o cognome...'
-        searchKey='fullName'
+        searchPlaceholder='Filter users...'
+        searchKey='username'
         filters={[
           {
-            columnId: 'ruolo',
-            title: 'Ruolo',
-            options: ruoliValues.map((ruolo) => ({
-              label: ruolo,
-              value: ruolo,
-            })),
+            columnId: 'status',
+            title: 'Status',
+            options: [
+              { label: 'Active', value: 'active' },
+              { label: 'Inactive', value: 'inactive' },
+              { label: 'Invited', value: 'invited' },
+              { label: 'Suspended', value: 'suspended' },
+            ],
+          },
+          {
+            columnId: 'role',
+            title: 'Role',
+            options: roles.map((role) => ({ ...role })),
           },
         ]}
       />
@@ -149,21 +155,7 @@ export function UsersTable({ data, search, navigate }: DataTableProps) {
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
-                  className='group/row cursor-pointer'
-                  onClick={(event) => {
-                    // Prevent opening dialog when clicking on checkbox or action buttons
-                    const target = event.target as HTMLElement
-                    if (
-                      target.closest('button') ||
-                      target.closest('input[type="checkbox"]') ||
-                      target.closest('[role="menu"]') ||
-                      target.closest('[data-radix-dropdown-menu-content]')
-                    ) {
-                      return
-                    }
-                    setCurrentRow(row.original)
-                    setOpen('edit')
-                  }}
+                  className='group/row'
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell

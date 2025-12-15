@@ -3,7 +3,11 @@
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { showSubmittedData } from '@/lib/show-submitted-data'
+import { toast } from 'sonner'
+import { useQueryClient } from '@tanstack/react-query'
+import React, { useEffect } from 'react'
+import { supabase } from '@/lib/supabase'
+import { useEnums } from '@/context/enums-provider'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -22,133 +26,153 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { PasswordInput } from '@/components/password-input'
-import { SelectDropdown } from '@/components/select-dropdown'
-import { roles } from '../data/data'
-import { type User } from '../data/schema'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { userSchema, type User } from '../data/schema'
 
-const formSchema = z
-  .object({
-    firstName: z.string().min(1, 'First Name is required.'),
-    lastName: z.string().min(1, 'Last Name is required.'),
-    username: z.string().min(1, 'Username is required.'),
-    phoneNumber: z.string().min(1, 'Phone number is required.'),
-    email: z.email({
-      error: (iss) => (iss.input === '' ? 'Email is required.' : undefined),
-    }),
-    password: z.string().transform((pwd) => pwd.trim()),
-    role: z.string().min(1, 'Role is required.'),
-    confirmPassword: z.string().transform((pwd) => pwd.trim()),
-    isEdit: z.boolean(),
-  })
-  .refine(
-    (data) => {
-      if (data.isEdit && !data.password) return true
-      return data.password.length > 0
-    },
-    {
-      message: 'Password is required.',
-      path: ['password'],
-    }
-  )
-  .refine(
-    ({ isEdit, password }) => {
-      if (isEdit && !password) return true
-      return password.length >= 8
-    },
-    {
-      message: 'Password must be at least 8 characters long.',
-      path: ['password'],
-    }
-  )
-  .refine(
-    ({ isEdit, password }) => {
-      if (isEdit && !password) return true
-      return /[a-z]/.test(password)
-    },
-    {
-      message: 'Password must contain at least one lowercase letter.',
-      path: ['password'],
-    }
-  )
-  .refine(
-    ({ isEdit, password }) => {
-      if (isEdit && !password) return true
-      return /\d/.test(password)
-    },
-    {
-      message: 'Password must contain at least one number.',
-      path: ['password'],
-    }
-  )
-  .refine(
-    ({ isEdit, password, confirmPassword }) => {
-      if (isEdit && !password) return true
-      return password === confirmPassword
-    },
-    {
-      message: "Passwords don't match.",
-      path: ['confirmPassword'],
-    }
-  )
-type UserForm = z.infer<typeof formSchema>
-
-type UserActionDialogProps = {
-  currentRow?: User
+interface UsersActionDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  currentRow: User | null
 }
 
 export function UsersActionDialog({
-  currentRow,
   open,
   onOpenChange,
-}: UserActionDialogProps) {
+  currentRow,
+}: UsersActionDialogProps) {
   const isEdit = !!currentRow
-  const form = useForm<UserForm>({
-    resolver: zodResolver(formSchema),
-    defaultValues: isEdit
+  const queryClient = useQueryClient()
+
+  // Usa gli enums dal contesto globale
+  const { ruoli: ruoliValues, isLoading: isLoadingEnums } = useEnums()
+
+  const form = useForm<User>({
+    resolver: zodResolver(userSchema),
+    defaultValues: currentRow
       ? {
           ...currentRow,
-          password: '',
-          confirmPassword: '',
-          isEdit,
+          ruolo: currentRow.ruolo || null,
         }
       : {
-          firstName: '',
-          lastName: '',
-          username: '',
-          email: '',
-          role: '',
-          phoneNumber: '',
-          password: '',
-          confirmPassword: '',
-          isEdit,
+          name: null,
+          surname: null,
+          ruolo: null,
         },
   })
 
-  const onSubmit = (values: UserForm) => {
-    form.reset()
-    showSubmittedData(values)
-    onOpenChange(false)
-  }
+  // Usa un ref per tracciare l'ultimo currentRow resettato per evitare reset multipli
+  const lastResetRowIdRef = React.useRef<number | null>(null)
+  const lastResetOpenRef = React.useRef<boolean>(false)
 
-  const isPasswordTouched = !!form.formState.dirtyFields.password
+  // Aggiorna il form quando currentRow cambia E quando enum sono caricati E quando il dialog è aperto
+  useEffect(() => {
+    // Non resettare il form se il dialog non è aperto
+    if (!open) {
+      // Reset del ref quando il dialog si chiude
+      if (lastResetOpenRef.current) {
+        lastResetRowIdRef.current = null
+        lastResetOpenRef.current = false
+      }
+      return
+    }
+
+    // Aspetta che enum siano caricati prima di resettare il form
+    if (isLoadingEnums) {
+      return
+    }
+
+    // Verifica che gli enum siano effettivamente disponibili
+    const hasRuoli = ruoliValues.length > 0
+    if (!hasRuoli && currentRow?.ruolo) {
+      return
+    }
+
+    if (currentRow) {
+      // Evita reset multipli dello stesso currentRow
+      const currentRowId = currentRow.id ?? null
+      if (lastResetRowIdRef.current === currentRowId && lastResetOpenRef.current === open) {
+        return
+      }
+      form.reset({
+        ...currentRow,
+        ruolo: currentRow.ruolo || null,
+      })
+      lastResetRowIdRef.current = currentRowId
+      lastResetOpenRef.current = open
+    } else {
+      if (lastResetRowIdRef.current === null && lastResetOpenRef.current === open) {
+        return
+      }
+      form.reset({
+        name: null,
+        surname: null,
+        ruolo: null,
+      })
+      lastResetRowIdRef.current = null
+      lastResetOpenRef.current = open
+    }
+  }, [currentRow, form, isLoadingEnums, open, ruoliValues.length])
+
+  const onSubmit = async (values: User) => {
+    try {
+      if (isEdit && currentRow?.id) {
+        // Update
+        const { error } = await supabase
+          .from('users_profile')
+          .update({
+            name: values.name || null,
+            surname: values.surname || null,
+            ruolo: values.ruolo || null,
+          })
+          .eq('id', currentRow.id)
+
+        if (error) throw error
+        toast.success('Utente aggiornato con successo')
+      } else {
+        // Insert
+        const { error } = await supabase
+          .from('users_profile')
+          .insert({
+            name: values.name || null,
+            surname: values.surname || null,
+            ruolo: values.ruolo || null,
+          })
+
+        if (error) throw error
+        toast.success('Utente creato con successo')
+      }
+
+      await queryClient.invalidateQueries({ queryKey: ['users'] })
+      form.reset()
+      onOpenChange(false)
+    } catch (error: any) {
+      toast.error(error.message || 'Errore durante il salvataggio')
+    }
+  }
 
   return (
     <Dialog
       open={open}
       onOpenChange={(state) => {
-        form.reset()
+        if (!state) {
+          form.reset()
+        }
         onOpenChange(state)
       }}
     >
       <DialogContent className='sm:max-w-lg'>
         <DialogHeader className='text-start'>
-          <DialogTitle>{isEdit ? 'Edit User' : 'Add New User'}</DialogTitle>
+          <DialogTitle>{isEdit ? 'Modifica Utente' : 'Aggiungi Utente'}</DialogTitle>
           <DialogDescription>
-            {isEdit ? 'Update the user here. ' : 'Create new user here. '}
-            Click save when you&apos;re done.
+            {isEdit
+              ? 'Modifica i dati dell\'utente qui. Clicca salva quando hai finito.'
+              : 'Crea un nuovo utente qui. Clicca salva quando hai finito.'}
           </DialogDescription>
         </DialogHeader>
         <div className='h-[26.25rem] w-[calc(100%+0.75rem)] overflow-y-auto py-1 pe-3'>
@@ -160,18 +184,19 @@ export function UsersActionDialog({
             >
               <FormField
                 control={form.control}
-                name='firstName'
+                name='surname'
                 render={({ field }) => (
                   <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
                     <FormLabel className='col-span-2 text-end'>
-                      First Name
+                      Cognome
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder='John'
+                        placeholder='Rossi'
                         className='col-span-4'
                         autoComplete='off'
                         {...field}
+                        value={field.value || ''}
                       />
                     </FormControl>
                     <FormMessage className='col-span-4 col-start-3' />
@@ -180,18 +205,19 @@ export function UsersActionDialog({
               />
               <FormField
                 control={form.control}
-                name='lastName'
+                name='name'
                 render={({ field }) => (
                   <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
                     <FormLabel className='col-span-2 text-end'>
-                      Last Name
+                      Nome
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder='Doe'
+                        placeholder='Mario'
                         className='col-span-4'
                         autoComplete='off'
                         {...field}
+                        value={field.value || ''}
                       />
                     </FormControl>
                     <FormMessage className='col-span-4 col-start-3' />
@@ -200,113 +226,29 @@ export function UsersActionDialog({
               />
               <FormField
                 control={form.control}
-                name='username'
+                name='ruolo'
                 render={({ field }) => (
                   <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                    <FormLabel className='col-span-2 text-end'>
-                      Username
-                    </FormLabel>
+                    <FormLabel className='col-span-2 text-end'>Ruolo</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder='john_doe'
-                        className='col-span-4'
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage className='col-span-4 col-start-3' />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name='email'
-                render={({ field }) => (
-                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                    <FormLabel className='col-span-2 text-end'>Email</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder='john.doe@gmail.com'
-                        className='col-span-4'
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage className='col-span-4 col-start-3' />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name='phoneNumber'
-                render={({ field }) => (
-                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                    <FormLabel className='col-span-2 text-end'>
-                      Phone Number
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder='+123456789'
-                        className='col-span-4'
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage className='col-span-4 col-start-3' />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name='role'
-                render={({ field }) => (
-                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                    <FormLabel className='col-span-2 text-end'>Role</FormLabel>
-                    <SelectDropdown
-                      defaultValue={field.value}
-                      onValueChange={field.onChange}
-                      placeholder='Select a role'
-                      className='col-span-4'
-                      items={roles.map(({ label, value }) => ({
-                        label,
-                        value,
-                      }))}
-                    />
-                    <FormMessage className='col-span-4 col-start-3' />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name='password'
-                render={({ field }) => (
-                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                    <FormLabel className='col-span-2 text-end'>
-                      Password
-                    </FormLabel>
-                    <FormControl>
-                      <PasswordInput
-                        placeholder='e.g., S3cur3P@ssw0rd'
-                        className='col-span-4'
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage className='col-span-4 col-start-3' />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name='confirmPassword'
-                render={({ field }) => (
-                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                    <FormLabel className='col-span-2 text-end'>
-                      Confirm Password
-                    </FormLabel>
-                    <FormControl>
-                      <PasswordInput
-                        disabled={!isPasswordTouched}
-                        placeholder='e.g., S3cur3P@ssw0rd'
-                        className='col-span-4'
-                        {...field}
-                      />
+                      <Select
+                        value={field.value || '__none__'}
+                        onValueChange={(value) => {
+                          field.onChange(value === '__none__' ? null : value)
+                        }}
+                      >
+                        <SelectTrigger className='col-span-4'>
+                          <SelectValue placeholder='Seleziona un ruolo' />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value='__none__'>Nessuno</SelectItem>
+                          {ruoliValues.map((ruolo) => (
+                            <SelectItem key={ruolo} value={ruolo}>
+                              {ruolo}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </FormControl>
                     <FormMessage className='col-span-4 col-start-3' />
                   </FormItem>
@@ -317,7 +259,7 @@ export function UsersActionDialog({
         </div>
         <DialogFooter>
           <Button type='submit' form='user-form'>
-            Save changes
+            Salva modifiche
           </Button>
         </DialogFooter>
       </DialogContent>

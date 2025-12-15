@@ -23,6 +23,7 @@ import {
   GalleryVerticalEnd,
   Building2,
   ScrollText,
+  Boxes,
 } from 'lucide-react'
 import { type SidebarData } from '../types'
 
@@ -80,15 +81,21 @@ export const sidebarData: SidebarData = {
           icon: Users,
         },
         {
-          title: 'Aziende',
-          url: '/companies',
-          icon: Building2,
-        },
-        {
           title: 'Commesse',
           url: '/commesse',
           icon: ScrollText,
         },
+        {
+          title: 'Pianificazione',
+          url: '/pianificazione',
+          icon: Boxes,
+        },
+        {
+          title: 'Aziende',
+          url: '/companies',
+          icon: Building2,
+        },
+
       ],
     },
     {

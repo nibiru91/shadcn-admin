@@ -2,7 +2,9 @@
 
 import { useState } from 'react'
 import { AlertTriangle } from 'lucide-react'
-import { showSubmittedData } from '@/lib/show-submitted-data'
+import { toast } from 'sonner'
+import { useQueryClient } from '@tanstack/react-query'
+import { supabase } from '@/lib/supabase'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -21,60 +23,96 @@ export function UsersDeleteDialog({
   currentRow,
 }: UserDeleteDialogProps) {
   const [value, setValue] = useState('')
+  const queryClient = useQueryClient()
 
-  const handleDelete = () => {
-    if (value.trim() !== currentRow.username) return
+  // Costruisci il nome completo (Cognome Nome)
+  const parts: string[] = []
+  if (currentRow.surname) parts.push(currentRow.surname)
+  if (currentRow.name) parts.push(currentRow.name)
+  const fullName = parts.length > 0 ? parts.join(' ') : 'questo utente'
+  const confirmationText = fullName
 
-    onOpenChange(false)
-    showSubmittedData(currentRow, 'The following user has been deleted:')
+  const handleDelete = async () => {
+    if (value.trim() !== confirmationText) {
+      toast.error('Il testo di conferma non corrisponde')
+      return
+    }
+
+    try {
+      // Eliminazione logica: non eliminiamo fisicamente, ma potremmo impostare un flag se necessario
+      // Per ora, eliminiamo fisicamente il record
+      const { error } = await supabase
+        .from('users_profile')
+        .delete()
+        .eq('id', currentRow.id)
+
+      if (error) throw error
+
+      await queryClient.invalidateQueries({ queryKey: ['users'] })
+      toast.success('Utente eliminato con successo')
+      onOpenChange(false)
+      setValue('')
+    } catch (error: any) {
+      toast.error(error.message || 'Errore durante l\'eliminazione')
+    }
   }
 
   return (
     <ConfirmDialog
       open={open}
-      onOpenChange={onOpenChange}
+      onOpenChange={(state) => {
+        if (!state) {
+          setValue('')
+        }
+        onOpenChange(state)
+      }}
       handleConfirm={handleDelete}
-      disabled={value.trim() !== currentRow.username}
+      disabled={value.trim() !== confirmationText}
       title={
         <span className='text-destructive'>
           <AlertTriangle
             className='stroke-destructive me-1 inline-block'
             size={18}
           />{' '}
-          Delete User
+          Elimina Utente
         </span>
       }
       desc={
         <div className='space-y-4'>
           <p className='mb-2'>
-            Are you sure you want to delete{' '}
-            <span className='font-bold'>{currentRow.username}</span>?
+            Sei sicuro di voler eliminare{' '}
+            <span className='font-bold'>{fullName}</span>?
             <br />
-            This action will permanently remove the user with the role of{' '}
-            <span className='font-bold'>
-              {currentRow.role.toUpperCase()}
-            </span>{' '}
-            from the system. This cannot be undone.
+            {currentRow.ruolo && (
+              <>
+                Questo utente ha il ruolo di{' '}
+                <span className='font-bold'>
+                  {currentRow.ruolo.toUpperCase()}
+                </span>
+                .{' '}
+              </>
+            )}
+            Questa azione non può essere annullata.
           </p>
 
           <Label className='my-2'>
-            Username:
+            Digita "{confirmationText}" per confermare:
             <Input
               value={value}
               onChange={(e) => setValue(e.target.value)}
-              placeholder='Enter username to confirm deletion.'
+              placeholder={`Digita "${confirmationText}"`}
             />
           </Label>
 
           <Alert variant='destructive'>
-            <AlertTitle>Warning!</AlertTitle>
+            <AlertTitle>Attenzione!</AlertTitle>
             <AlertDescription>
-              Please be careful, this operation can not be rolled back.
+              Questa operazione non può essere annullata.
             </AlertDescription>
           </Alert>
         </div>
       }
-      confirmText='Delete'
+      confirmText='Elimina'
       destructive
     />
   )

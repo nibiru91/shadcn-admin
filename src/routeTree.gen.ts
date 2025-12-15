@@ -25,6 +25,7 @@ import { Route as AuthenticatedSettingsRouteRouteImport } from './routes/_authen
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
 import { Route as AuthenticatedTasksIndexRouteImport } from './routes/_authenticated/tasks/index'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
+import { Route as AuthenticatedPianificazioneIndexRouteImport } from './routes/_authenticated/pianificazione/index'
 import { Route as AuthenticatedHelpCenterIndexRouteImport } from './routes/_authenticated/help-center/index'
 import { Route as AuthenticatedCompaniesIndexRouteImport } from './routes/_authenticated/companies/index'
 import { Route as AuthenticatedCommesseIndexRouteImport } from './routes/_authenticated/commesse/index'
@@ -117,6 +118,12 @@ const AuthenticatedSettingsIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedSettingsRouteRoute,
   } as any)
+const AuthenticatedPianificazioneIndexRoute =
+  AuthenticatedPianificazioneIndexRouteImport.update({
+    id: '/pianificazione/',
+    path: '/pianificazione/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedHelpCenterIndexRoute =
   AuthenticatedHelpCenterIndexRouteImport.update({
     id: '/help-center/',
@@ -199,6 +206,7 @@ export interface FileRoutesByFullPath {
   '/commesse': typeof AuthenticatedCommesseIndexRoute
   '/companies': typeof AuthenticatedCompaniesIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
+  '/pianificazione': typeof AuthenticatedPianificazioneIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/tasks': typeof AuthenticatedTasksIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
@@ -225,6 +233,7 @@ export interface FileRoutesByTo {
   '/commesse': typeof AuthenticatedCommesseIndexRoute
   '/companies': typeof AuthenticatedCompaniesIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
+  '/pianificazione': typeof AuthenticatedPianificazioneIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/tasks': typeof AuthenticatedTasksIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
@@ -254,6 +263,7 @@ export interface FileRoutesById {
   '/_authenticated/commesse/': typeof AuthenticatedCommesseIndexRoute
   '/_authenticated/companies/': typeof AuthenticatedCompaniesIndexRoute
   '/_authenticated/help-center/': typeof AuthenticatedHelpCenterIndexRoute
+  '/_authenticated/pianificazione/': typeof AuthenticatedPianificazioneIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/tasks/': typeof AuthenticatedTasksIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
@@ -283,6 +293,7 @@ export interface FileRouteTypes {
     | '/commesse'
     | '/companies'
     | '/help-center'
+    | '/pianificazione'
     | '/settings/'
     | '/tasks'
     | '/users'
@@ -309,6 +320,7 @@ export interface FileRouteTypes {
     | '/commesse'
     | '/companies'
     | '/help-center'
+    | '/pianificazione'
     | '/settings'
     | '/tasks'
     | '/users'
@@ -337,6 +349,7 @@ export interface FileRouteTypes {
     | '/_authenticated/commesse/'
     | '/_authenticated/companies/'
     | '/_authenticated/help-center/'
+    | '/_authenticated/pianificazione/'
     | '/_authenticated/settings/'
     | '/_authenticated/tasks/'
     | '/_authenticated/users/'
@@ -470,6 +483,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsIndexRouteImport
       parentRoute: typeof AuthenticatedSettingsRouteRoute
     }
+    '/_authenticated/pianificazione/': {
+      id: '/_authenticated/pianificazione/'
+      path: '/pianificazione'
+      fullPath: '/pianificazione'
+      preLoaderRoute: typeof AuthenticatedPianificazioneIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/help-center/': {
       id: '/_authenticated/help-center/'
       path: '/help-center'
@@ -575,6 +595,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCommesseIndexRoute: typeof AuthenticatedCommesseIndexRoute
   AuthenticatedCompaniesIndexRoute: typeof AuthenticatedCompaniesIndexRoute
   AuthenticatedHelpCenterIndexRoute: typeof AuthenticatedHelpCenterIndexRoute
+  AuthenticatedPianificazioneIndexRoute: typeof AuthenticatedPianificazioneIndexRoute
   AuthenticatedTasksIndexRoute: typeof AuthenticatedTasksIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
 }
@@ -588,6 +609,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCommesseIndexRoute: AuthenticatedCommesseIndexRoute,
   AuthenticatedCompaniesIndexRoute: AuthenticatedCompaniesIndexRoute,
   AuthenticatedHelpCenterIndexRoute: AuthenticatedHelpCenterIndexRoute,
+  AuthenticatedPianificazioneIndexRoute: AuthenticatedPianificazioneIndexRoute,
   AuthenticatedTasksIndexRoute: AuthenticatedTasksIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
 }

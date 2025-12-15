@@ -59,7 +59,7 @@ export function CompaniesTable({ data, search, navigate }: DataTableProps) {
     navigate,
     pagination: { defaultPage: 1, defaultPageSize: 10 },
     globalFilter: { enabled: false },
-      columnFilters: [
+    columnFilters: [
         { columnId: 'ragione_sociale', searchKey: 'ragione_sociale', type: 'string' },
         { columnId: 'piva_cf', searchKey: 'piva_cf', type: 'string' },
         { columnId: 'is_customer', searchKey: 'is_customer', type: 'boolean' },
@@ -68,7 +68,7 @@ export function CompaniesTable({ data, search, navigate }: DataTableProps) {
         { columnId: 'city', searchKey: 'city', type: 'array' },
         { columnId: 'province', searchKey: 'province', type: 'array' },
         { columnId: 'country', searchKey: 'country', type: 'array' },
-      ],
+    ],
   })
 
   // eslint-disable-next-line react-hooks/incompatible-library
@@ -160,7 +160,7 @@ export function CompaniesTable({ data, search, navigate }: DataTableProps) {
             : []),
           ...(provinceOptions.length > 0
             ? [
-                {
+          {
                   columnId: 'province',
                   title: 'Provincia',
                   options: provinceOptions,
@@ -173,7 +173,7 @@ export function CompaniesTable({ data, search, navigate }: DataTableProps) {
                   columnId: 'country',
                   title: 'Paese',
                   options: countryOptions,
-                },
+          },
               ]
             : []),
         ]}

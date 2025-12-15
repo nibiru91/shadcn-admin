@@ -7,6 +7,7 @@ type EnumsProviderState = {
   stato: string[]
   area: string[]
   categoria: string[]
+  ruoli: string[]
   isLoading: boolean
   error: Error | null
 }
@@ -16,6 +17,7 @@ const initialState: EnumsProviderState = {
   stato: [],
   area: [],
   categoria: [],
+  ruoli: [],
   isLoading: true,
   error: null,
 }
@@ -90,22 +92,40 @@ export function EnumsProvider({ children }: EnumsProviderProps) {
     staleTime: Infinity,
   })
 
+  const {
+    data: ruoliData = [],
+    isLoading: isLoadingRuoli,
+    error: ruoliError,
+  } = useQuery({
+    queryKey: ['enum-ruoli'],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('enum_values', {
+        enum_name: 'ruoli',
+      })
+      if (error) throw new Error(error.message)
+      return data || []
+    },
+    staleTime: Infinity,
+  })
+
   // Normalizza i valori
   const tipologia = normalizeEnumValues(tipologiaData)
   const stato = normalizeEnumValues(statoData)
   const area = normalizeEnumValues(areaData)
   const categoria = normalizeEnumValues(categoriaData)
+  const ruoli = normalizeEnumValues(ruoliData)
 
   const isLoading =
-    isLoadingTipologia || isLoadingStato || isLoadingArea || isLoadingCategoria
+    isLoadingTipologia || isLoadingStato || isLoadingArea || isLoadingCategoria || isLoadingRuoli
 
   const contextValue: EnumsProviderState = {
     tipologia,
     stato,
     area,
     categoria,
+    ruoli,
     isLoading,
-    error: categoriaError as Error | null,
+    error: (categoriaError || ruoliError) as Error | null,
   }
 
   return (
