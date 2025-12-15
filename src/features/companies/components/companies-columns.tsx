@@ -35,6 +35,7 @@ export const companiesColumns: ColumnDef<Company>[] = [
 		header: ({ column }) => (
 			<DataTableColumnHeader column={column} title='Ragione Sociale' />
 		),
+		meta: { label: 'Ragione Sociale' },
 		cell: ({ row }) => (
 			<div className='font-medium'>{row.getValue('ragione_sociale')}</div>
 		),
@@ -45,8 +46,19 @@ export const companiesColumns: ColumnDef<Company>[] = [
 			isCustomer: row.is_customer,
 			isSupplier: row.is_supplier,
 		}),
-		header: 'Tipologia',
+		header: ({ column }) => (
+			<DataTableColumnHeader column={column} title='Tipologia' />
+		),
 		meta: { label: 'Tipologia' },
+		sortingFn: (rowA, rowB) => {
+			const value = (row: typeof rowA) => {
+				const parts: string[] = []
+				if (row.original.is_customer) parts.push('cliente')
+				if (row.original.is_supplier) parts.push('fornitore')
+				return parts.join('-') || 'nessuno'
+			}
+			return value(rowA).localeCompare(value(rowB))
+		},
 		cell: ({ row }) => {
 			const isCustomer = row.original.is_customer
 			const isSupplier = row.original.is_supplier
@@ -74,7 +86,7 @@ export const companiesColumns: ColumnDef<Company>[] = [
 		id: 'is_customer',
 		accessorKey: 'is_customer',
 		header: 'Cliente',
-		enableSorting: false,
+		enableSorting: true,
 		enableHiding: false,
 		meta: { thClassName: 'hidden', tdClassName: 'hidden', hideInViewOptions: true },
 	},
@@ -82,32 +94,60 @@ export const companiesColumns: ColumnDef<Company>[] = [
 		id: 'is_supplier',
 		accessorKey: 'is_supplier',
 		header: 'Fornitore',
-		enableSorting: false,
+		enableSorting: true,
 		enableHiding: false,
 		meta: { thClassName: 'hidden', tdClassName: 'hidden', hideInViewOptions: true },
 	},
 	{
 		accessorKey: 'partita_iva',
-		header: 'P.IVA',
+		header: ({ column }) => (
+			<DataTableColumnHeader column={column} title='P.IVA' />
+		),
+		meta: { label: 'P.IVA' },
 	},
 	{
 		accessorKey: 'codice_fiscale',
-		header: 'Codice Fiscale',
+		header: ({ column }) => (
+			<DataTableColumnHeader column={column} title='Codice Fiscale' />
+		),
+		meta: { label: 'Codice Fiscale' },
+	},
+	{
+		accessorKey: 'description',
+		header: ({ column }) => (
+			<DataTableColumnHeader column={column} title='Note' />
+		),
+		meta: { label: 'Note' },
+		cell: ({ row }) => {
+			const value = row.getValue<string | null>('description')
+			if (!value) return <span className='text-muted-foreground text-xs'>-</span>
+			return <span className='line-clamp-2'>{value}</span>
+		},
 	},
 	{
 		accessorKey: 'city',
-		header: 'Città',
+		header: ({ column }) => (
+			<DataTableColumnHeader column={column} title='Città' />
+		),
+		meta: { label: 'Città' },
 	},
 	{
 		accessorKey: 'province',
-		header: 'Prov',
+		header: ({ column }) => (
+			<DataTableColumnHeader column={column} title='Prov' />
+		),
+		meta: { label: 'Prov' },
 	},
 	{
 		accessorKey: 'country',
-		header: 'Paese',
+		header: ({ column }) => (
+			<DataTableColumnHeader column={column} title='Paese' />
+		),
+		meta: { label: 'Paese' },
 	},
 	{
 		id: 'actions',
 		cell: ({ row }) => <DataTableRowActions row={row} />,
+		enableSorting: false,
 	},
 ]

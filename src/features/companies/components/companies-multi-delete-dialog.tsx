@@ -17,7 +17,7 @@ type CompanyMultiDeleteDialogProps<TData> = {
   table: Table<TData>
 }
 
-const CONFIRM_WORD = 'DELETE'
+const CONFIRM_WORD = 'ELIMINA'
 
 export function CompaniesMultiDeleteDialog<TData>({
   open,
@@ -31,7 +31,7 @@ export function CompaniesMultiDeleteDialog<TData>({
 
   const handleDelete = async () => {
     if (value.trim() !== CONFIRM_WORD) {
-      toast.error(`Please type "${CONFIRM_WORD}" to confirm.`)
+      toast.error(`Scrivi "${CONFIRM_WORD}" per confermare la cancellazione.`)
       return
     }
 
@@ -73,7 +73,7 @@ export function CompaniesMultiDeleteDialog<TData>({
             className='stroke-destructive me-1 inline-block'
             size={18}
           />{' '}
-          Delete {selectedRows.length}{' '}
+          Elimina {selectedRows.length}{' '}
           {selectedRows.length > 1 ? 'aziende' : 'azienda'}
         </span>
       }
@@ -81,27 +81,27 @@ export function CompaniesMultiDeleteDialog<TData>({
         <div className='space-y-4'>
           <p className='mb-2'>
             Sei sicuro di voler eliminare le aziende selezionate? <br />
-            This action cannot be undone.
+            Questa operazione non può essere annullata.
           </p>
 
           <Label className='my-4 flex flex-col items-start gap-1.5'>
-            <span className=''>Confirm by typing "{CONFIRM_WORD}":</span>
+            <span className=''>Conferma scrivendo "{CONFIRM_WORD}":</span>
             <Input
               value={value}
               onChange={(e) => setValue(e.target.value)}
-              placeholder={`Type "${CONFIRM_WORD}" to confirm.`}
+              placeholder={`Scrivi "${CONFIRM_WORD}" per confermare.`}
             />
           </Label>
 
           <Alert variant='destructive'>
-            <AlertTitle>Warning!</AlertTitle>
+            <AlertTitle>DANGER ZONE</AlertTitle>
             <AlertDescription>
-              Please be careful, this operation can not be rolled back.
+              Attenzione, questa operazione non può essere annullata.
             </AlertDescription>
           </Alert>
         </div>
       }
-      confirmText='Delete'
+      confirmText='Elimina'
       destructive
     />
   )
