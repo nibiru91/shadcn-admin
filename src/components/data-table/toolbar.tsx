@@ -18,6 +18,10 @@ type DataTableToolbarProps<TData> = {
       icon?: React.ComponentType<{ className?: string }>
     }[]
   }[]
+  textFilters?: {
+    columnId: string
+    placeholder?: string
+  }[]
 }
 
 export function DataTableToolbar<TData>({
@@ -25,6 +29,7 @@ export function DataTableToolbar<TData>({
   searchPlaceholder = 'Filter...',
   searchKey,
   filters = [],
+  textFilters = [],
 }: DataTableToolbarProps<TData>) {
   const isFiltered =
     table.getState().columnFilters.length > 0 || table.getState().globalFilter
@@ -51,6 +56,19 @@ export function DataTableToolbar<TData>({
             className='h-8 w-[150px] lg:w-[250px]'
           />
         )}
+        {textFilters.map((filter) => {
+          const column = table.getColumn(filter.columnId)
+          if (!column) return null
+          return (
+            <Input
+              key={filter.columnId}
+              placeholder={filter.placeholder ?? 'Filtra...'}
+              value={(column.getFilterValue() as string) ?? ''}
+              onChange={(event) => column.setFilterValue(event.target.value)}
+              className='h-8 w-[150px] lg:w-[200px]'
+            />
+          )
+        })}
         <div className='flex gap-x-2'>
           {filters.map((filter) => {
             const column = table.getColumn(filter.columnId)

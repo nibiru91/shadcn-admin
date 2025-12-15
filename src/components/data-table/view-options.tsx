@@ -17,6 +17,16 @@ type DataTableViewOptionsProps<TData> = {
 export function DataTableViewOptions<TData>({
   table,
 }: DataTableViewOptionsProps<TData>) {
+  const getLabel = (column: Table<TData>['getAllColumns'][number]) => {
+    const header = column.columnDef.header
+    if (typeof header === 'string') return header
+    if (typeof column.columnDef.meta === 'object' && 'label' in (column.columnDef.meta ?? {})) {
+      // @ts-expect-error meta label runtime
+      return column.columnDef.meta.label || column.id
+    }
+    return column.id
+  }
+
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
@@ -38,6 +48,7 @@ export function DataTableViewOptions<TData>({
             (column) =>
               typeof column.accessorFn !== 'undefined' && column.getCanHide()
           )
+          .filter((column) => column.columnDef.meta?.hideInViewOptions !== true)
           .map((column) => {
             return (
               <DropdownMenuCheckboxItem
@@ -46,7 +57,7 @@ export function DataTableViewOptions<TData>({
                 checked={column.getIsVisible()}
                 onCheckedChange={(value) => column.toggleVisibility(!!value)}
               >
-                {column.id}
+                {getLabel(column)}
               </DropdownMenuCheckboxItem>
             )
           })}
