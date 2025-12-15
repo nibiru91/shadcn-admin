@@ -27,6 +27,7 @@ import { DataTableBulkActions } from './data-table-bulk-actions'
 import { commesseColumns as columns } from './commesse-columns'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
+import { useCommesse } from './commesse-provider'
 
 type DataTableProps = {
   data: Commessa[]
@@ -46,6 +47,7 @@ async function fetchCompanies() {
 }
 
 export function CommesseTable({ data, search, navigate }: DataTableProps) {
+  const { setOpen, setCurrentRow } = useCommesse()
   // Local UI-only states
   const [rowSelection, setRowSelection] = useState({})
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
@@ -146,7 +148,6 @@ export function CommesseTable({ data, search, navigate }: DataTableProps) {
   }, [table, ensurePageInRange])
 
   // Calcola le opzioni dinamiche dai valori unici nel DB
-  const clienteColumn = table.getColumn('cliente_diretto')
   const tipologiaColumn = table.getColumn('tipologia')
   const statoColumn = table.getColumn('stato')
   const areaColumn = table.getColumn('area')
@@ -161,28 +162,28 @@ export function CommesseTable({ data, search, navigate }: DataTableProps) {
         .filter((value): value is string => value !== null && value !== undefined && value !== '')
         .sort()
         .map((value) => ({ label: value, value }))
-    : tipologiaValues.map((v) => ({ label: v, value: v }))
+    : tipologiaValues.map((v: string) => ({ label: v, value: v }))
 
   const statoOptions = statoColumn
     ? Array.from(statoColumn.getFacetedUniqueValues().keys())
         .filter((value): value is string => value !== null && value !== undefined && value !== '')
         .sort()
         .map((value) => ({ label: value, value }))
-    : statoValues.map((v) => ({ label: v, value: v }))
+    : statoValues.map((v: string) => ({ label: v, value: v }))
 
   const areaOptions = areaColumn
     ? Array.from(areaColumn.getFacetedUniqueValues().keys())
         .filter((value): value is string => value !== null && value !== undefined && value !== '')
         .sort()
         .map((value) => ({ label: value, value }))
-    : areaValues.map((v) => ({ label: v, value: v }))
+    : areaValues.map((v: string) => ({ label: v, value: v }))
 
   const categoriaOptions = categoriaColumn
     ? Array.from(categoriaColumn.getFacetedUniqueValues().keys())
         .filter((value): value is string => value !== null && value !== undefined && value !== '')
         .sort()
         .map((value) => ({ label: value, value }))
-    : categoriaValues.map((v) => ({ label: v, value: v }))
+    : categoriaValues.map((v: string) => ({ label: v, value: v }))
 
   return (
     <div
@@ -277,7 +278,21 @@ export function CommesseTable({ data, search, navigate }: DataTableProps) {
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
-                  className='group/row'
+                  className='group/row cursor-pointer'
+                  onClick={(event) => {
+                    // Prevent opening dialog when clicking on checkbox, action buttons, or dropdown menu
+                    const target = event.target as HTMLElement
+                    if (
+                      target.closest('button') ||
+                      target.closest('input[type="checkbox"]') ||
+                      target.closest('[role="menu"]') ||
+                      target.closest('[data-radix-dropdown-menu-content]')
+                    ) {
+                      return
+                    }
+                    setCurrentRow(row.original)
+                    setOpen('edit')
+                  }}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell

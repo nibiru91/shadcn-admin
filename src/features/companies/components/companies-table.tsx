@@ -25,6 +25,7 @@ import { DataTablePagination, DataTableToolbar } from '@/components/data-table'
 import { type Company } from '../data/schema'
 import { DataTableBulkActions } from './data-table-bulk-actions'
 import { companiesColumns as columns } from './companies-columns'
+import { useCompanies } from './companies-provider'
 
 type DataTableProps = {
   data: Company[]
@@ -40,6 +41,7 @@ export function CompaniesTable({ data, search, navigate }: DataTableProps) {
     is_supplier: false,
   })
   const [sorting, setSorting] = useState<SortingState>([])
+  const { setOpen, setCurrentRow } = useCompanies()
 
   // Local state management for table (uncomment to use local-only state, not synced with URL)
   // const [columnFilters, onColumnFiltersChange] = useState<ColumnFiltersState>([])
@@ -210,7 +212,20 @@ export function CompaniesTable({ data, search, navigate }: DataTableProps) {
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
-                  className='group/row'
+                  className='group/row cursor-pointer'
+                  onClick={(e) => {
+                    // Non aprire il dialog se si clicca su checkbox o azioni
+                    const target = e.target as HTMLElement
+                    if (
+                      target.closest('button') ||
+                      target.closest('[role="checkbox"]') ||
+                      target.closest('[data-radix-popper-content-wrapper]')
+                    ) {
+                      return
+                    }
+                    setCurrentRow(row.original)
+                    setOpen('edit')
+                  }}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell

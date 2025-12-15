@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
 import { useQueryClient, useQuery } from '@tanstack/react-query'
 import { parseISO } from 'date-fns'
+import React, { useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import {
@@ -54,7 +55,7 @@ export function CommesseActionDialog({
   const queryClient = useQueryClient()
 
   // Carica enum values
-  const { data: tipologiaValues = [] } = useQuery({
+  const { data: tipologiaValues = [], isLoading: isLoadingTipologia } = useQuery({
     queryKey: ['enum-tipo_commesse'],
     queryFn: async () => {
       const { data, error } = await supabase.rpc('enum_values', { enum_name: 'tipo_commesse' })
@@ -66,7 +67,7 @@ export function CommesseActionDialog({
     },
   })
 
-  const { data: statoValues = [] } = useQuery({
+  const { data: statoValues = [], isLoading: isLoadingStato } = useQuery({
     queryKey: ['enum-stato_commesse'],
     queryFn: async () => {
       const { data, error } = await supabase.rpc('enum_values', { enum_name: 'stato_commesse' })
@@ -77,7 +78,7 @@ export function CommesseActionDialog({
     },
   })
 
-  const { data: areaValues = [] } = useQuery({
+  const { data: areaValues = [], isLoading: isLoadingArea } = useQuery({
     queryKey: ['enum-aree_aziendali'],
     queryFn: async () => {
       const { data, error } = await supabase.rpc('enum_values', { enum_name: 'aree_aziendali' })
@@ -88,7 +89,7 @@ export function CommesseActionDialog({
     },
   })
 
-  const { data: categoriaValues = [] } = useQuery({
+  const { data: categoriaValues = [], isLoading: isLoadingCategoria } = useQuery({
     queryKey: ['enum-categorie_aziendali'],
     queryFn: async () => {
       const { data, error } = await supabase.rpc('enum_values', { enum_name: 'categorie_aziendali' })
@@ -98,6 +99,8 @@ export function CommesseActionDialog({
       ).filter((v: string) => v && v.trim() !== '')
     },
   })
+
+  const isLoadingEnums = isLoadingTipologia || isLoadingStato || isLoadingArea || isLoadingCategoria
 
   const form = useForm<Commessa>({
     resolver: zodResolver(commessaSchema),
@@ -136,6 +139,100 @@ export function CommesseActionDialog({
           riferimento_esterno: null,
         },
   })
+
+  // Usa un ref per tracciare l'ultimo currentRow resettato per evitare reset multipli
+  const lastResetRowIdRef = React.useRef<number | null>(null)
+  const lastResetOpenRef = React.useRef<boolean>(false)
+
+  // Aggiorna il form quando currentRow cambia E quando enum sono caricati E quando il dialog è aperto
+  useEffect(() => {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/df847be0-25f0-4c0b-ba0a-7bc1fdb8a606',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'commesse-action-dialog.tsx:148',message:'Form reset effect triggered',data:{open,isEdit,currentRowId:currentRow?.id,isLoadingEnums,lastResetRowId:lastResetRowIdRef.current,lastResetOpen:lastResetOpenRef.current},timestamp:Date.now(),sessionId:'debug-session',runId:'run3',hypothesisId:'B'})}).catch(()=>{});
+    // #endregion
+    // Non resettare il form se il dialog non è aperto
+    if (!open) {
+      // Reset del ref quando il dialog si chiude
+      if (lastResetOpenRef.current) {
+        lastResetRowIdRef.current = null
+        lastResetOpenRef.current = false
+      }
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/df847be0-25f0-4c0b-ba0a-7bc1fdb8a606',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'commesse-action-dialog.tsx:157',message:'Dialog not open, skipping reset',data:{open},timestamp:Date.now(),sessionId:'debug-session',runId:'run3',hypothesisId:'B'})}).catch(()=>{});
+      // #endregion
+      return
+    }
+
+    // Aspetta che enum siano caricati E disponibili prima di resettare il form
+    if (isLoadingEnums) {
+      return
+    }
+    
+    // Verifica che gli enum siano effettivamente disponibili (non solo che non stiano caricando)
+    const hasEnums = tipologiaValues.length > 0 && statoValues.length > 0 && areaValues.length > 0 && categoriaValues.length > 0
+    if (!hasEnums) {
+      return
+    }
+
+    if (currentRow) {
+      // Evita reset multipli dello stesso currentRow
+      const currentRowId = currentRow.id ?? null
+      if (lastResetRowIdRef.current === currentRowId && lastResetOpenRef.current === open) {
+        return
+      }
+      // Estrai l'ID se cliente_diretto/cliente_fatturazione sono oggetti dal join
+      const clienteDirettoId = typeof currentRow.cliente_diretto === 'object' && currentRow.cliente_diretto !== null
+        ? (currentRow.cliente_diretto as any)?.id ?? null
+        : currentRow.cliente_diretto ?? null
+      const clienteFatturazioneId = typeof currentRow.cliente_fatturazione === 'object' && currentRow.cliente_fatturazione !== null
+        ? (currentRow.cliente_fatturazione as any)?.id ?? null
+        : currentRow.cliente_fatturazione ?? null
+      form.reset({
+        ...currentRow,
+        tipologia: currentRow.tipologia || null,
+        stato: currentRow.stato || null,
+        area: currentRow.area || null,
+        categoria: currentRow.categoria || null,
+        cliente_diretto: clienteDirettoId,
+        cliente_fatturazione: clienteFatturazioneId,
+      })
+      // Aggiorna il ref per evitare reset multipli
+      lastResetRowIdRef.current = currentRowId
+      lastResetOpenRef.current = open
+    } else {
+      // Evita reset multipli quando currentRow è null (modalità creazione)
+      if (lastResetRowIdRef.current === null && lastResetOpenRef.current === open) {
+        return
+      }
+      form.reset({
+        title: '',
+        description: '',
+        date_invio: null,
+        date_approvazione: null,
+        date_rifiuto: null,
+        date_avvio: null,
+        date_termine: null,
+        date_avvio_prev: null,
+        date_termine_prev: null,
+        ore_previste: 0,
+        ore_pianificate: 0,
+        ore_consuntivate: 0,
+        ore_residue: 0,
+        tipologia: null,
+        stato: null,
+        area: null,
+        categoria: null,
+        is_valid: true,
+        is_closed: false,
+        cliente_diretto: null,
+        cliente_fatturazione: null,
+        riferimento_interno: null,
+        riferimento_esterno: null,
+      })
+      // Aggiorna il ref per evitare reset multipli
+      lastResetRowIdRef.current = null
+      lastResetOpenRef.current = open
+    }
+  }, [currentRow, form, isLoadingEnums, tipologiaValues.length, statoValues.length, areaValues.length, categoriaValues.length, open])
 
   async function onSubmit(data: Commessa) {
     try {
@@ -412,7 +509,7 @@ export function CommesseActionDialog({
               />
             </div>
 
-            <div className='grid grid-cols-4 gap-4'>
+            <div className='grid grid-cols-3 gap-4'>
               <FormField
                 control={form.control}
                 name='date_invio'
@@ -464,43 +561,9 @@ export function CommesseActionDialog({
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name='date_avvio'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Data Avvio</FormLabel>
-                    <FormControl>
-                      <DatePicker
-                        selected={parseDate(field.value)}
-                        onSelect={(date) => field.onChange(date ? date.toISOString().split('T')[0] : null)}
-                        placeholder='Seleziona data...'
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </div>
 
-            <div className='grid grid-cols-3 gap-4'>
-              <FormField
-                control={form.control}
-                name='date_termine'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Data Termine</FormLabel>
-                    <FormControl>
-                      <DatePicker
-                        selected={parseDate(field.value)}
-                        onSelect={(date) => field.onChange(date ? date.toISOString().split('T')[0] : null)}
-                        placeholder='Seleziona data...'
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <div className='grid grid-cols-2 gap-4'>
               <FormField
                 control={form.control}
                 name='date_avvio_prev'
@@ -524,6 +587,43 @@ export function CommesseActionDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Data Termine Prevista</FormLabel>
+                    <FormControl>
+                      <DatePicker
+                        selected={parseDate(field.value)}
+                        onSelect={(date) => field.onChange(date ? date.toISOString().split('T')[0] : null)}
+                        placeholder='Seleziona data...'
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className='grid grid-cols-2 gap-4'>
+              <FormField
+                control={form.control}
+                name='date_avvio'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Data Avvio</FormLabel>
+                    <FormControl>
+                      <DatePicker
+                        selected={parseDate(field.value)}
+                        onSelect={(date) => field.onChange(date ? date.toISOString().split('T')[0] : null)}
+                        placeholder='Seleziona data...'
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name='date_termine'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Data Termine</FormLabel>
                     <FormControl>
                       <DatePicker
                         selected={parseDate(field.value)}

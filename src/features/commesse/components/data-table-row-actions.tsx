@@ -33,9 +33,14 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
         </DropdownMenuTrigger>
         <DropdownMenuContent align='end' className='w-[160px]'>
           <DropdownMenuItem
-            onClick={() => {
-              setCurrentRow(row.original)
-              setOpen('edit')
+            onClick={(e) => {
+              e.stopPropagation() // Previeni la propagazione del click alla TableRow
+              e.preventDefault() // Previeni anche il comportamento di default
+              // Usa setTimeout per assicurarsi che il DropdownMenu si chiuda prima di aprire il Dialog
+              setTimeout(() => {
+                setCurrentRow(row.original)
+                setOpen('edit')
+              }, 0)
             }}
           >
             Modifica
@@ -45,9 +50,14 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
-            onClick={() => {
-              setCurrentRow(row.original)
-              setOpen('delete')
+            onClick={(e) => {
+              e.stopPropagation() // Previeni la propagazione del click alla TableRow
+              e.preventDefault() // Previeni anche il comportamento di default
+              // Usa setTimeout per assicurarsi che il DropdownMenu si chiuda prima di aprire il Dialog
+              setTimeout(() => {
+                setCurrentRow(row.original)
+                setOpen('delete')
+              }, 0)
             }}
             className='text-red-500!'
           >
