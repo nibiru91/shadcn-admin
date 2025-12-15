@@ -1,20 +1,39 @@
 import { z } from 'zod'
+import { supabase } from '@/lib/supabase'
 
-export const companySchema = z.object({
+export const commessaSchema = z.object({
   id: z.number().optional(),
-  ragione_sociale: z.string().min(1, 'La ragione sociale è obbligatoria'),
+  title: z.string().min(1, 'Il titolo è obbligatorio'),
   description: z.string().optional().nullable(),
-  partita_iva: z.string().optional().nullable(),
-  codice_fiscale: z.string().optional().nullable(),
-  address: z.string().optional().nullable(),
-  cap: z.string().optional().nullable(),
-  city: z.string().optional().nullable(),
-  province: z.string().optional().nullable(),
-  country: z.string().optional().nullable(),
-  is_active: z.boolean().default(true),
-  is_customer: z.boolean().default(false),
-  is_supplier: z.boolean().default(false),
+  date_invio: z.string().optional().nullable(),
+  date_approvazione: z.string().optional().nullable(),
+  date_rifiuto: z.string().optional().nullable(),
+  date_avvio: z.string().optional().nullable(),
+  date_termine: z.string().optional().nullable(),
+  date_avvio_prev: z.string().optional().nullable(),
+  date_termine_prev: z.string().optional().nullable(),
+  ore_previste: z.number().min(0).optional().nullable(),
+  ore_pianificate: z.number().min(0).optional().nullable(),
+  ore_consuntivate: z.number().min(0).optional().nullable(),
+  ore_residue: z.number().optional().nullable(),
+  tipologia: z.string().optional().nullable(),
+  stato: z.string().optional().nullable(),
+  area: z.string().optional().nullable(),
+  categoria: z.string().optional().nullable(),
+  is_valid: z.boolean().default(true),
+  is_closed: z.boolean().default(false),
+  cliente_diretto: z.number().optional().nullable(),
+  cliente_fatturazione: z.number().optional().nullable(),
+  riferimento_interno: z.string().optional().nullable(),
+  riferimento_esterno: z.string().optional().nullable(),
   created_at: z.string().optional(),
 })
 
-export type Company = z.infer<typeof companySchema>
+export type Commessa = z.infer<typeof commessaSchema>
+
+// Helper per ottenere i valori degli enum
+export async function getEnumValues(enumName: string): Promise<string[]> {
+  const { data, error } = await supabase.rpc('enum_values', { enum_name: enumName })
+  if (error) throw new Error(error.message)
+  return data || []
+}

@@ -83,6 +83,11 @@ export const sidebarData: SidebarData = {
           url: '/companies',
           icon: Building2,
         },
+        {
+          title: 'Commesse',
+          url: '/commesse',
+          icon: Building2,
+        },
       ],
     },
     {

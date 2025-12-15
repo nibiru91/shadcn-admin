@@ -2,9 +2,13 @@ import { useState } from 'react'
 import { type Table } from '@tanstack/react-table'
 import { Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { DataTableBulkActions as BulkActionsToolbar } from '@/components/data-table'
-import { CompaniesMultiDeleteDialog } from './companies-multi-delete-dialog'
+import { CommesseMultiDeleteDialog } from './commesse-multi-delete-dialog'
 
 type DataTableBulkActionsProps<TData> = {
   table: Table<TData>
@@ -17,7 +21,7 @@ export function DataTableBulkActions<TData>({
 
   return (
     <>
-      <BulkActionsToolbar table={table} entityName='azienda' entityNamePlural='aziende'>
+      <BulkActionsToolbar table={table} entityName='commessa'>
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
@@ -25,20 +29,20 @@ export function DataTableBulkActions<TData>({
               size='icon'
               onClick={() => setShowDeleteConfirm(true)}
               className='size-8'
-              aria-label='Elimina aziende selezionate'
-              title='Elimina aziende selezionate'
+              aria-label='Elimina commesse selezionate'
+              title='Elimina commesse selezionate'
             >
               <Trash2 />
-              <span className='sr-only'>Elimina aziende selezionate</span>
+              <span className='sr-only'>Elimina commesse selezionate</span>
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Elimina aziende selezionate</p>
+            <p>Elimina commesse selezionate</p>
           </TooltipContent>
         </Tooltip>
       </BulkActionsToolbar>
 
-      <CompaniesMultiDeleteDialog
+      <CommesseMultiDeleteDialog
         table={table}
         open={showDeleteConfirm}
         onOpenChange={setShowDeleteConfirm}

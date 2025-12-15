@@ -7,35 +7,39 @@ import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { ConfigDrawer } from '@/components/config-drawer'
-import { CompaniesProvider } from './components/companies-provider'
-import { CompaniesDialogs } from './components/companies-dialogs'
-import { CompaniesTable } from './components/companies-table'
-import { companiesColumns } from './components/companies-columns'
-import { CompaniesPrimaryButtons } from './components/companies-primary-buttons'
+import { CommesseProvider } from './components/commesse-provider'
+import { CommesseDialogs } from './components/commesse-dialogs'
+import { CommesseTable } from './components/commesse-table'
+import { commesseColumns } from './components/commesse-columns'
+import { CommessePrimaryButtons } from './components/commesse-primary-buttons'
 
-const route = getRouteApi('/_authenticated/companies/')
+const route = getRouteApi('/_authenticated/commesse/')
 
-async function fetchCompanies() {
+async function fetchCommesse() {
   const { data, error } = await supabase
-    .from('companies')
-    .select('*')
-    .eq('is_active', true) // Mostriamo solo le attive
+    .from('commesse')
+    .select(`
+      *,
+      cliente_diretto:companies!cliente_diretto(id, ragione_sociale),
+      cliente_fatturazione:companies!cliente_fatturazione(id, ragione_sociale)
+    `)
+    .eq('is_valid', true) // Mostriamo solo le valide
     .order('created_at', { ascending: false })
 
   if (error) throw new Error(error.message)
   return data
 }
 
-function CompaniesContent() {
+function CommesseContent() {
   const search = route.useSearch()
   const navigate = route.useNavigate()
   
-  const { data: companies, isLoading, isError, error } = useQuery({
-    queryKey: ['companies'],
-    queryFn: fetchCompanies,
+  const { data: commesse, isLoading, isError, error } = useQuery({
+    queryKey: ['commesse'],
+    queryFn: fetchCommesse,
   })
 
-  if (isLoading) return <div className="p-8">Caricamento aziende...</div>
+  if (isLoading) return <div className="p-8">Caricamento commesse...</div>
   if (isError) return <div className="p-8 text-red-500">Errore: {error.message}</div>
 
   return (
@@ -52,30 +56,30 @@ function CompaniesContent() {
       <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
         <div className='flex flex-wrap items-end justify-between gap-2'>
           <div>
-            <h2 className='text-2xl font-bold tracking-tight'>Aziende</h2>
+            <h2 className='text-2xl font-bold tracking-tight'>Commesse</h2>
             <p className='text-muted-foreground'>
-              Gestisci clienti e fornitori.
+              Gestisci le commesse.
             </p>
           </div>
-          <CompaniesPrimaryButtons />
+          <CommessePrimaryButtons />
         </div>
-        <CompaniesTable 
-          columns={companiesColumns} 
-          data={companies || []} 
+        <CommesseTable 
+          columns={commesseColumns} 
+          data={commesse || []} 
           search={search}
           navigate={navigate}
         />
       </Main>
 
-      <CompaniesDialogs />
+      <CommesseDialogs />
     </>
   )
 }
 
-export function Companies() {
+export function Commesse() {
   return (
-    <CompaniesProvider>
-      <CompaniesContent />
-    </CompaniesProvider>
+    <CommesseProvider>
+      <CommesseContent />
+    </CommesseProvider>
   )
 }

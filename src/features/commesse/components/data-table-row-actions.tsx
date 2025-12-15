@@ -10,15 +10,15 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { type Company } from '../data/schema'
-import { useCompanies } from './companies-provider'
+import { type Commessa } from '../data/schema'
+import { useCommesse } from './commesse-provider'
 
 type DataTableRowActionsProps = {
-  row: Row<Company>
+  row: Row<Commessa>
 }
 
 export function DataTableRowActions({ row }: DataTableRowActionsProps) {
-  const { setOpen, setCurrentRow } = useCompanies()
+  const { setOpen, setCurrentRow } = useCommesse()
   return (
     <>
       <DropdownMenu modal={false}>
@@ -28,7 +28,7 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
             className='data-[state=open]:bg-muted flex h-8 w-8 p-0'
           >
             <DotsHorizontalIcon className='h-4 w-4' />
-            <span className='sr-only'>Apri menu</span>
+            <span className='sr-only'>Open menu</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align='end' className='w-[160px]'>
