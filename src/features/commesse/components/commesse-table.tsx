@@ -28,6 +28,7 @@ import { commesseColumns as columns } from './commesse-columns'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { useCommesse } from './commesse-provider'
+import { useEnums } from '@/context/enums-provider'
 
 type DataTableProps = {
   data: Commessa[]
@@ -59,42 +60,8 @@ export function CommesseTable({ data, search, navigate }: DataTableProps) {
     queryFn: fetchCompanies,
   })
 
-  // Carica enum values
-  const { data: tipologiaValues = [] } = useQuery({
-    queryKey: ['enum-tipo_commesse'],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('enum_values', { enum_name: 'tipo_commesse' })
-      if (error) throw new Error(error.message)
-      return data || []
-    },
-  })
-
-  const { data: statoValues = [] } = useQuery({
-    queryKey: ['enum-stato_commesse'],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('enum_values', { enum_name: 'stato_commesse' })
-      if (error) throw new Error(error.message)
-      return data || []
-    },
-  })
-
-  const { data: areaValues = [] } = useQuery({
-    queryKey: ['enum-aree_aziendali'],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('enum_values', { enum_name: 'aree_aziendali' })
-      if (error) throw new Error(error.message)
-      return data || []
-    },
-  })
-
-  const { data: categoriaValues = [] } = useQuery({
-    queryKey: ['enum-categorie_aziendali'],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('enum_values', { enum_name: 'categorie_aziendali' })
-      if (error) throw new Error(error.message)
-      return data || []
-    },
-  })
+  // Usa gli enums dal contesto globale
+  const { tipologia: tipologiaValues, stato: statoValues, area: areaValues, categoria: categoriaValues } = useEnums()
 
   // Synced with URL states
   const {

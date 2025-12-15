@@ -22,6 +22,7 @@ import {
   Command,
   GalleryVerticalEnd,
   Building2,
+  ScrollText,
 } from 'lucide-react'
 import { type SidebarData } from '../types'
 
@@ -86,7 +87,7 @@ export const sidebarData: SidebarData = {
         {
           title: 'Commesse',
           url: '/commesse',
-          icon: Building2,
+          icon: ScrollText,
         },
       ],
     },

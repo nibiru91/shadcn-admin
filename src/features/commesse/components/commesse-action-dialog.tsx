@@ -4,10 +4,11 @@ import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
-import { useQueryClient, useQuery } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import { parseISO } from 'date-fns'
 import React, { useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
+import { useEnums } from '@/context/enums-provider'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -54,53 +55,8 @@ export function CommesseActionDialog({
   const isEdit = !!currentRow
   const queryClient = useQueryClient()
 
-  // Carica enum values
-  const { data: tipologiaValues = [], isLoading: isLoadingTipologia } = useQuery({
-    queryKey: ['enum-tipo_commesse'],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('enum_values', { enum_name: 'tipo_commesse' })
-      if (error) throw new Error(error.message)
-      // Estrai il campo value se sono oggetti, altrimenti usa direttamente le stringhe
-      return (data || []).map((item: string | { value: string }) => 
-        typeof item === 'string' ? item : item.value
-      ).filter((v: string) => v && v.trim() !== '')
-    },
-  })
-
-  const { data: statoValues = [], isLoading: isLoadingStato } = useQuery({
-    queryKey: ['enum-stato_commesse'],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('enum_values', { enum_name: 'stato_commesse' })
-      if (error) throw new Error(error.message)
-      return (data || []).map((item: string | { value: string }) => 
-        typeof item === 'string' ? item : item.value
-      ).filter((v: string) => v && v.trim() !== '')
-    },
-  })
-
-  const { data: areaValues = [], isLoading: isLoadingArea } = useQuery({
-    queryKey: ['enum-aree_aziendali'],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('enum_values', { enum_name: 'aree_aziendali' })
-      if (error) throw new Error(error.message)
-      return (data || []).map((item: string | { value: string }) => 
-        typeof item === 'string' ? item : item.value
-      ).filter((v: string) => v && v.trim() !== '')
-    },
-  })
-
-  const { data: categoriaValues = [], isLoading: isLoadingCategoria } = useQuery({
-    queryKey: ['enum-categorie_aziendali'],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('enum_values', { enum_name: 'categorie_aziendali' })
-      if (error) throw new Error(error.message)
-      return (data || []).map((item: string | { value: string }) => 
-        typeof item === 'string' ? item : item.value
-      ).filter((v: string) => v && v.trim() !== '')
-    },
-  })
-
-  const isLoadingEnums = isLoadingTipologia || isLoadingStato || isLoadingArea || isLoadingCategoria
+  // Usa gli enums dal contesto globale
+  const { tipologia: tipologiaValues, stato: statoValues, area: areaValues, categoria: categoriaValues, isLoading: isLoadingEnums } = useEnums()
 
   const form = useForm<Commessa>({
     resolver: zodResolver(commessaSchema),
@@ -372,13 +328,11 @@ export function CommesseActionDialog({
                       </FormControl>
                       <SelectContent>
                         <SelectItem value='__none__'>Nessuna</SelectItem>
-                        {tipologiaValues
-                          .filter((v): v is string => typeof v === 'string' && v.trim() !== '')
-                          .map((value) => (
-                            <SelectItem key={value} value={String(value)}>
-                              {String(value)}
-                            </SelectItem>
-                          ))}
+                        {tipologiaValues.map((value) => (
+                          <SelectItem key={value} value={String(value)}>
+                            {String(value)}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -402,13 +356,11 @@ export function CommesseActionDialog({
                       </FormControl>
                       <SelectContent>
                         <SelectItem value='__none__'>Nessuno</SelectItem>
-                        {statoValues
-                          .filter((v): v is string => typeof v === 'string' && v.trim() !== '')
-                          .map((value) => (
-                            <SelectItem key={value} value={String(value)}>
-                              {String(value)}
-                            </SelectItem>
-                          ))}
+                        {statoValues.map((value) => (
+                          <SelectItem key={value} value={String(value)}>
+                            {String(value)}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -435,13 +387,11 @@ export function CommesseActionDialog({
                       </FormControl>
                       <SelectContent>
                         <SelectItem value='__none__'>Nessuna</SelectItem>
-                        {areaValues
-                          .filter((v): v is string => typeof v === 'string' && v.trim() !== '')
-                          .map((value) => (
-                            <SelectItem key={value} value={String(value)}>
-                              {String(value)}
-                            </SelectItem>
-                          ))}
+                        {areaValues.map((value) => (
+                          <SelectItem key={value} value={String(value)}>
+                            {String(value)}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -465,13 +415,11 @@ export function CommesseActionDialog({
                       </FormControl>
                       <SelectContent>
                         <SelectItem value='__none__'>Nessuna</SelectItem>
-                        {categoriaValues
-                          .filter((v): v is string => typeof v === 'string' && v.trim() !== '')
-                          .map((value) => (
-                            <SelectItem key={value} value={String(value)}>
-                              {String(value)}
-                            </SelectItem>
-                          ))}
+                        {categoriaValues.map((value) => (
+                          <SelectItem key={value} value={String(value)}>
+                            {String(value)}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
