@@ -168,7 +168,7 @@ export function TimesheetPopup({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='max-w-4xl max-h-[90vh] overflow-y-auto'>
+      <DialogContent className='!w-[95vw] !max-w-[95vw] sm:!max-w-[95vw] max-h-[90vh] overflow-y-auto p-4 sm:p-6'>
         <DialogHeader>
           <DialogTitle>Seleziona Timesheet</DialogTitle>
           <DialogDescription>

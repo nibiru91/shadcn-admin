@@ -225,7 +225,11 @@ export function FattureTable({ data, search, navigate }: DataTableProps) {
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
-                  className='group/row'
+                  className='group/row cursor-pointer'
+                  onClick={() => {
+                    setCurrentRow(row.original)
+                    setOpen('view')
+                  }}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell

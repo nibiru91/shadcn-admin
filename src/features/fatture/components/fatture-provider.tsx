@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import useDialogState from '@/hooks/use-dialog-state'
 import { Fattura } from '../data/schema'
 
-type FattureDialogType = 'add' | 'edit' | 'delete' | 'multi-delete'
+type FattureDialogType = 'add' | 'edit' | 'delete' | 'multi-delete' | 'view'
 
 interface FattureContextType {
   open: FattureDialogType | null

@@ -36,7 +36,8 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
             onClick={(e) => {
               e.stopPropagation()
               e.preventDefault()
-              // Non implementato per ora
+              setCurrentRow(row.original)
+              setOpen('view')
             }}
           >
             Visualizza
