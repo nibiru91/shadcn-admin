@@ -26,6 +26,7 @@ import {
   Boxes,
   Calendar,
   Clock,
+  Receipt,
 } from 'lucide-react'
 import { type SidebarData } from '../types'
 
@@ -76,6 +77,11 @@ export const sidebarData: SidebarData = {
           url: '/chats',
           badge: '3',
           icon: MessagesSquare,
+        },
+        {
+          title: 'Fatture',
+          url: '/fatture',
+          icon: Receipt,
         },
         {
           title: 'Timesheet',
