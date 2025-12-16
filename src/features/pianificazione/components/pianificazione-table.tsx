@@ -173,6 +173,10 @@ export function PianificazioneTable({ data, search, navigate }: DataTableProps) 
             value: String(userId),
           }
         })
+        // Rimuovi duplicati basandosi sul value (ID utente)
+        .filter((option, index, self) => 
+          index === self.findIndex((o) => o.value === option.value)
+        )
         .sort((a, b) => a.label.localeCompare(b.label))
     : users.map((u) => ({
         label: getUserDisplayName(u),
@@ -193,6 +197,10 @@ export function PianificazioneTable({ data, search, navigate }: DataTableProps) 
             value: String(commessaId),
           }
         })
+        // Rimuovi duplicati basandosi sul value (ID commessa)
+        .filter((option, index, self) => 
+          index === self.findIndex((o) => o.value === option.value)
+        )
         .sort((a, b) => a.label.localeCompare(b.label))
     : commesse.map((c) => ({
         label: c.title,
