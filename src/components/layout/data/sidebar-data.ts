@@ -27,15 +27,12 @@ import {
   Calendar,
   Clock,
   Receipt,
+  CreditCard,
+  ShoppingCart,
 } from 'lucide-react'
 import { type SidebarData } from '../types'
 
 export const sidebarData: SidebarData = {
-  user: {
-    name: 'satnaing',
-    email: 'satnaingdev@gmail.com',
-    avatar: '/avatars/shadcn.jpg',
-  },
   teams: [
     {
       name: 'Shadcn Admin',
@@ -55,7 +52,7 @@ export const sidebarData: SidebarData = {
   ],
   navGroups: [
     {
-      title: 'General',
+      title: 'Menu principale',
       items: [
         {
           title: 'Dashboard',
@@ -79,39 +76,63 @@ export const sidebarData: SidebarData = {
           icon: MessagesSquare,
         },
         {
-          title: 'Fatture',
-          url: '/fatture',
-          icon: Receipt,
+          title: 'Accounting & Finance',
+          icon: CreditCard,
+          items: [
+            {
+              title: 'Fatture',
+              url: '/fatture',
+              icon: Receipt,
+            },
+            ],
         },
         {
-          title: 'Timesheet',
-          url: '/timesheet',
-          icon: Clock,
+          title: 'Operations',
+          icon: Wrench,
+          items: [
+            {
+              title: 'Timesheet',
+              url: '/timesheet',
+              icon: Clock,
+            },
+            {
+              title: 'Pianificazione',
+              url: '/pianificazione',
+              icon: Boxes,
+            },
+            {
+              title: 'Ferie',
+              url: '/ferie',
+              icon: Calendar,
+            },
+          ],
         },
         {
-          title: 'Pianificazione',
-          url: '/pianificazione',
-          icon: Boxes,
+          title: 'Sales',
+          icon: ShoppingCart,
+          items: [
+            {
+              title: 'Commesse',
+              url: '/commesse',
+              icon: ScrollText,
+            },
+            {
+              title: 'Aziende',
+              url: '/companies',
+              icon: Building2,
+            },
+          ],
         },
         {
-          title: 'Ferie',
-          url: '/ferie',
-          icon: Calendar,
-        },
-        {
-          title: 'Commesse',
-          url: '/commesse',
-          icon: ScrollText,
-        },
-        {
-          title: 'Aziende',
-          url: '/companies',
-          icon: Building2,
-        },
-        {
-          title: 'Users',
-          url: '/users',
-          icon: Users,
+          title: 'Admin',
+          icon: ShieldCheck,
+          items: [
+            {
+              title: 'Users',
+              url: '/users',
+              icon: Users,
+            },
+          ],
         },
 
       ],
@@ -179,7 +200,7 @@ export const sidebarData: SidebarData = {
       ],
     },
     {
-      title: 'Other',
+      title: 'Utilità',
       items: [
         {
           title: 'Settings',

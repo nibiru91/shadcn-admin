@@ -6,9 +6,12 @@ export function FatturePrimaryButtons() {
   const { setOpen } = useFatture()
   return (
     <div className='flex gap-2'>
-      <Button className='space-x-1' onClick={() => {
-        // Non fa nulla per ora
-      }}>
+      <Button
+        className='space-x-1'
+        onClick={() => {
+          window.open('/fatture/nuova', '_blank')
+        }}
+      >
         <span>Nuova Fattura</span> <FilePlus size={18} />
       </Button>
     </div>

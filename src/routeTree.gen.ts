@@ -39,6 +39,7 @@ import { Route as AuthenticatedSettingsDisplayRouteImport } from './routes/_auth
 import { Route as AuthenticatedSettingsAppearanceRouteImport } from './routes/_authenticated/settings/appearance'
 import { Route as AuthenticatedSettingsAccountRouteImport } from './routes/_authenticated/settings/account'
 import { Route as AuthenticatedErrorsErrorRouteImport } from './routes/_authenticated/errors/$error'
+import { Route as AuthenticatedFattureNuovaIndexRouteImport } from './routes/_authenticated/fatture/nuova/index'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
@@ -202,6 +203,12 @@ const AuthenticatedErrorsErrorRoute =
     path: '/errors/$error',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedFattureNuovaIndexRoute =
+  AuthenticatedFattureNuovaIndexRouteImport.update({
+    id: '/fatture/nuova/',
+    path: '/fatture/nuova/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRouteRouteWithChildren
@@ -233,6 +240,7 @@ export interface FileRoutesByFullPath {
   '/tasks': typeof AuthenticatedTasksIndexRoute
   '/timesheet': typeof AuthenticatedTimesheetIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/fatture/nuova': typeof AuthenticatedFattureNuovaIndexRoute
 }
 export interface FileRoutesByTo {
   '/forgot-password': typeof authForgotPasswordRoute
@@ -263,6 +271,7 @@ export interface FileRoutesByTo {
   '/tasks': typeof AuthenticatedTasksIndexRoute
   '/timesheet': typeof AuthenticatedTimesheetIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/fatture/nuova': typeof AuthenticatedFattureNuovaIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -296,6 +305,7 @@ export interface FileRoutesById {
   '/_authenticated/tasks/': typeof AuthenticatedTasksIndexRoute
   '/_authenticated/timesheet/': typeof AuthenticatedTimesheetIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
+  '/_authenticated/fatture/nuova/': typeof AuthenticatedFattureNuovaIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -329,6 +339,7 @@ export interface FileRouteTypes {
     | '/tasks'
     | '/timesheet'
     | '/users'
+    | '/fatture/nuova'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/forgot-password'
@@ -359,6 +370,7 @@ export interface FileRouteTypes {
     | '/tasks'
     | '/timesheet'
     | '/users'
+    | '/fatture/nuova'
   id:
     | '__root__'
     | '/_authenticated'
@@ -391,6 +403,7 @@ export interface FileRouteTypes {
     | '/_authenticated/tasks/'
     | '/_authenticated/timesheet/'
     | '/_authenticated/users/'
+    | '/_authenticated/fatture/nuova/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -619,6 +632,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedErrorsErrorRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/fatture/nuova/': {
+      id: '/_authenticated/fatture/nuova/'
+      path: '/fatture/nuova'
+      fullPath: '/fatture/nuova'
+      preLoaderRoute: typeof AuthenticatedFattureNuovaIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -660,6 +680,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedTasksIndexRoute: typeof AuthenticatedTasksIndexRoute
   AuthenticatedTimesheetIndexRoute: typeof AuthenticatedTimesheetIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
+  AuthenticatedFattureNuovaIndexRoute: typeof AuthenticatedFattureNuovaIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -677,6 +698,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedTasksIndexRoute: AuthenticatedTasksIndexRoute,
   AuthenticatedTimesheetIndexRoute: AuthenticatedTimesheetIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
+  AuthenticatedFattureNuovaIndexRoute: AuthenticatedFattureNuovaIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

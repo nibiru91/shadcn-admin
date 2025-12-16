@@ -1,4 +1,5 @@
 import { useLayout } from '@/context/layout-provider'
+import { useUser } from '@/context/user-provider'
 import {
   Sidebar,
   SidebarContent,
@@ -14,6 +15,21 @@ import { TeamSwitcher } from './team-switcher'
 
 export function AppSidebar() {
   const { collapsible, variant } = useLayout()
+  const { user, isLoading } = useUser()
+
+  // Mappa i dati dell'utente dal contesto al formato richiesto
+  const userData = user
+    ? {
+        name: [user.surname, user.name].filter(Boolean).join(' ') || 'Utente',
+        email: user.email || '',
+        avatar: '/avatars/shadcn.jpg', // Fallback, può essere esteso in futuro
+      }
+    : {
+        name: 'Utente',
+        email: '',
+        avatar: '/avatars/shadcn.jpg',
+      }
+
   return (
     <Sidebar collapsible={collapsible} variant={variant}>
       <SidebarHeader>
@@ -29,7 +45,7 @@ export function AppSidebar() {
         ))}
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={sidebarData.user} />
+        {!isLoading && <NavUser user={userData} />}
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
