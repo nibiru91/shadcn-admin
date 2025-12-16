@@ -7,11 +7,13 @@ import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { ConfigDrawer } from '@/components/config-drawer'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { FerieProvider } from './components/ferie-provider'
 import { FerieDialogs } from './components/ferie-dialogs'
 import { FerieTable } from './components/ferie-table'
-import { ferieColumns } from './components/ferie-columns'
 import { FeriePrimaryButtons } from './components/ferie-primary-buttons'
+import { FerieCalendar } from './components/calendar'
+import { FerieGrid } from './components/grid'
 import { Ferie } from './data/schema'
 
 const route = getRouteApi('/_authenticated/ferie/')
@@ -81,12 +83,28 @@ function FerieContent() {
           </div>
           <FeriePrimaryButtons />
         </div>
-        <FerieTable 
-          columns={ferieColumns} 
-          data={ferie || []} 
-          search={search}
-          navigate={navigate}
-        />
+        <Tabs defaultValue='table' className='space-y-4'>
+          <div className='w-full overflow-x-auto pb-2'>
+            <TabsList>
+              <TabsTrigger value='table'>Tabella</TabsTrigger>
+              <TabsTrigger value='calendar'>Calendario</TabsTrigger>
+              <TabsTrigger value='grid'>Griglia</TabsTrigger>
+            </TabsList>
+          </div>
+          <TabsContent value='table' className='space-y-4'>
+            <FerieTable 
+              data={ferie || []} 
+              search={search}
+              navigate={navigate}
+            />
+          </TabsContent>
+          <TabsContent value='calendar' className='space-y-4'>
+            <FerieCalendar data={ferie || []} />
+          </TabsContent>
+          <TabsContent value='grid' className='space-y-4'>
+            <FerieGrid data={ferie || []} />
+          </TabsContent>
+        </Tabs>
       </Main>
 
       <FerieDialogs />
