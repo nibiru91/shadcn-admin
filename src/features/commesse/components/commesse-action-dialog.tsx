@@ -79,15 +79,13 @@ export function CommesseActionDialog({
           date_avvio_prev: null,
           date_termine_prev: null,
           ore_previste: 0,
-          ore_pianificate: 0,
-          ore_consuntivate: 0,
-          ore_residue: 0,
+          tariffa_oraria: 0,
           tipologia: null,
           stato: null,
           area: null,
           categoria: null,
           is_valid: true,
-          is_closed: false,
+          is_closed: true,
           cliente_diretto: null,
           cliente_fatturazione: null,
           riferimento_interno: null,
@@ -163,15 +161,13 @@ export function CommesseActionDialog({
         date_avvio_prev: null,
         date_termine_prev: null,
         ore_previste: 0,
-        ore_pianificate: 0,
-        ore_consuntivate: 0,
-        ore_residue: 0,
+        tariffa_oraria: 0,
         tipologia: null,
         stato: null,
         area: null,
         categoria: null,
         is_valid: true,
-        is_closed: false,
+        is_closed: true,
         cliente_diretto: null,
         cliente_fatturazione: null,
         riferimento_interno: null,
@@ -612,7 +608,7 @@ export function CommesseActionDialog({
               />
             </div>
 
-            <div className='grid grid-cols-4 gap-4'>
+            <div className='grid grid-cols-2 gap-4'>
               <FormField
                 control={form.control}
                 name='ore_previste'
@@ -635,54 +631,14 @@ export function CommesseActionDialog({
               />
               <FormField
                 control={form.control}
-                name='ore_pianificate'
+                name='tariffa_oraria'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Ore Pianificate</FormLabel>
+                    <FormLabel>Tariffa Oraria</FormLabel>
                     <FormControl>
                       <Input
                         type='number'
-                        step='0.5'
-                        min='0'
-                        {...field}
-                        value={field.value ?? ''}
-                        onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : 0)}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name='ore_consuntivate'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Ore Consuntivate</FormLabel>
-                    <FormControl>
-                      <Input
-                        type='number'
-                        step='0.5'
-                        min='0'
-                        {...field}
-                        value={field.value ?? ''}
-                        onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : 0)}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name='ore_residue'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Ore Residue</FormLabel>
-                    <FormControl>
-                      <Input
-                        type='number'
-                        step='0.5'
+                        step='0.01'
                         min='0'
                         {...field}
                         value={field.value ?? ''}
