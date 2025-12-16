@@ -1,6 +1,6 @@
 import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 import { type Row } from '@tanstack/react-table'
-import { Trash2, Pencil } from 'lucide-react'
+import { Trash2, Eye, CheckCircle, XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { type Ferie } from '../data/schema'
 import { useFerie } from './ferie-provider'
+import { useUser } from '@/context/user-provider'
 
 type DataTableRowActionsProps = {
   row: Row<Ferie>
@@ -19,6 +20,10 @@ type DataTableRowActionsProps = {
 
 export function DataTableRowActions({ row }: DataTableRowActionsProps) {
   const { setOpen, setCurrentRow } = useFerie()
+  const { isSuperadmin } = useUser()
+  const stato = row.original.stato
+  const isPending = stato === 'pending'
+
   return (
     <>
       <DropdownMenu modal={false}>
@@ -42,11 +47,48 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
               }, 0)
             }}
           >
-            Modifica
+            Visualizza
             <DropdownMenuShortcut>
-              <Pencil size={16} />
+              <Eye size={16} />
             </DropdownMenuShortcut>
           </DropdownMenuItem>
+          {isSuperadmin && isPending && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation()
+                  e.preventDefault()
+                  setTimeout(() => {
+                    setCurrentRow(row.original)
+                    setOpen('approve')
+                  }, 0)
+                }}
+                className='text-green-600 dark:text-green-400'
+              >
+                Approva
+                <DropdownMenuShortcut>
+                  <CheckCircle size={16} />
+                </DropdownMenuShortcut>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation()
+                  e.preventDefault()
+                  setTimeout(() => {
+                    setCurrentRow(row.original)
+                    setOpen('reject')
+                  }, 0)
+                }}
+                className='text-orange-600 dark:text-orange-400'
+              >
+                Rifiuta
+                <DropdownMenuShortcut>
+                  <XCircle size={16} />
+                </DropdownMenuShortcut>
+              </DropdownMenuItem>
+            </>
+          )}
           <DropdownMenuSeparator />
           <DropdownMenuItem
             onClick={(e) => {

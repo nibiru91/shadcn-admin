@@ -49,9 +49,9 @@ export function FerieActionDialog({
   onOpenChange,
   currentRow,
 }: FerieActionDialogProps) {
-  // Per ora disabilitiamo l'edit
-  const isEdit = false
+  const isEdit = !!currentRow
   const queryClient = useQueryClient()
+  const [isLoadingRequest, setIsLoadingRequest] = React.useState(false)
 
   const form = useForm<FerieForm>({
     resolver: zodResolver(ferieFormSchema),
@@ -62,16 +62,88 @@ export function FerieActionDialog({
     },
   })
 
-  // Reset form quando il dialog si apre/chiude
+  // Carica i dati della richiesta quando si apre in modalità edit
   useEffect(() => {
-    if (!open) {
+    if (!open || !currentRow) {
       form.reset({
         user_id: undefined,
         tipologia: 'ferie',
         note_richiesta: null,
       })
+      return
     }
-  }, [open, form])
+
+    const loadRequestData = async () => {
+      setIsLoadingRequest(true)
+      try {
+        // Estrai request_id (può essere oggetto dal join)
+        const requestId = typeof currentRow.request_id === 'object' && currentRow.request_id !== null
+          ? (currentRow.request_id as any)?.id ?? currentRow.request_id
+          : currentRow.request_id
+
+        // Carica tutti i dettagli della stessa richiesta
+        const { data: details, error: detailsError } = await supabase
+          .from('ferie_details')
+          .select('*')
+          .eq('request_id', requestId)
+          .order('data_riferimento', { ascending: true })
+
+        if (detailsError) throw detailsError
+
+        // Carica la richiesta
+        const { data: request, error: requestError } = await supabase
+          .from('ferie_requests')
+          .select('*')
+          .eq('id', requestId)
+          .single()
+
+        if (requestError) throw requestError
+
+        // Estrai user_id (può essere oggetto dal join)
+        const userId = typeof currentRow.user_id === 'object' && currentRow.user_id !== null
+          ? (currentRow.user_id as any)?.id ?? currentRow.user_id
+          : currentRow.user_id
+
+        const tipologia = request.tipologia || currentRow.tipologia || 'ferie'
+
+        if (tipologia === 'ferie' || tipologia === 'malattia') {
+          // Per ferie/malattia, calcola data_da e data_a dai dettagli
+          if (details && details.length > 0) {
+            const dates = details.map((d: any) => new Date(d.data_riferimento)).sort((a, b) => a.getTime() - b.getTime())
+            const dataDa = dates[0]
+            const dataA = dates[dates.length - 1]
+
+            form.reset({
+              user_id: userId,
+              tipologia: tipologia as 'ferie' | 'malattia',
+              data_da: formatDateToString(dataDa) || '',
+              data_a: formatDateToString(dataA) || '',
+              note_richiesta: request.note_richiesta || null,
+            })
+          }
+        } else if (tipologia === 'permesso') {
+          // Per permesso, usa il primo (e unico) dettaglio
+          if (details && details.length > 0) {
+            const detail = details[0]
+            form.reset({
+              user_id: userId,
+              tipologia: 'permesso',
+              data_permesso: detail.data_riferimento || '',
+              ore_permesso: detail.ore || 0,
+              fascia_oraria: detail.fascia_oraria || 'full_day',
+              note_richiesta: request.note_richiesta || null,
+            })
+          }
+        }
+      } catch (error: any) {
+        toast.error(`Errore nel caricamento dati: ${error.message}`)
+      } finally {
+        setIsLoadingRequest(false)
+      }
+    }
+
+    loadRequestData()
+  }, [open, currentRow, form])
 
   // Reset campi condizionali quando cambia la tipologia
   const tipologia = form.watch('tipologia')
@@ -137,6 +209,8 @@ export function FerieActionDialog({
 
   async function onSubmit(data: FerieForm) {
     try {
+      const requestId = isEdit && currentRow ? currentRow.request_id : null
+
       if (data.tipologia === 'ferie' || data.tipologia === 'malattia') {
         // Gestione ferie/malattia
         const dataDa = parseDate(data.data_da)
@@ -156,47 +230,92 @@ export function FerieActionDialog({
 
         const totaleOreRichieste = workingDays.length * 8
 
-        // Crea la richiesta
-        const { data: requestData, error: requestError } = await supabase
-          .from('ferie_requests')
-          .insert({
-            user_id: data.user_id,
-            tipologia: data.tipologia,
-            stato: 'pending',
-            note_richiesta: data.note_richiesta || null,
-            totale_ore_richieste: totaleOreRichieste,
+        if (isEdit && requestId) {
+          // Modifica: elimina vecchi dettagli e aggiorna la richiesta
+          const { error: deleteError } = await supabase
+            .from('ferie_details')
+            .delete()
+            .eq('request_id', requestId)
+
+          if (deleteError) throw deleteError
+
+          const { error: updateError } = await supabase
+            .from('ferie_requests')
+            .update({
+              user_id: data.user_id,
+              tipologia: data.tipologia,
+              note_richiesta: data.note_richiesta || null,
+              totale_ore_richieste: totaleOreRichieste,
+            })
+            .eq('id', requestId)
+
+          if (updateError) throw updateError
+
+          // Crea i nuovi dettagli
+          const details = workingDays.map((date) => {
+            const { week, mese, anno } = calculateDateFields(date)
+            return {
+              request_id: requestId,
+              user_id: data.user_id,
+              data_riferimento: formatDateToString(date),
+              ore: 8,
+              week,
+              mese,
+              anno,
+              fascia_oraria: 'full_day',
+            }
           })
-          .select()
-          .single()
 
-        if (requestError) throw requestError
+          const { error: detailsError } = await supabase
+            .from('ferie_details')
+            .insert(details)
 
-        // Crea i dettagli per ogni giorno lavorativo
-        const details = workingDays.map((date) => {
-          const { week, mese, anno } = calculateDateFields(date)
-          return {
-            request_id: requestData.id,
-            user_id: data.user_id,
-            data_riferimento: formatDateToString(date),
-            ore: 8,
-            week,
-            mese,
-            anno,
-            fascia_oraria: 'full_day',
+          if (detailsError) throw detailsError
+
+          toast.success(`${data.tipologia === 'ferie' ? 'Ferie' : 'Malattia'} aggiornate con successo (${workingDays.length} giorni lavorativi)`)
+        } else {
+          // Crea nuova richiesta
+          const { data: requestData, error: requestError } = await supabase
+            .from('ferie_requests')
+            .insert({
+              user_id: data.user_id,
+              tipologia: data.tipologia,
+              stato: 'pending',
+              note_richiesta: data.note_richiesta || null,
+              totale_ore_richieste: totaleOreRichieste,
+            })
+            .select()
+            .single()
+
+          if (requestError) throw requestError
+
+          // Crea i dettagli per ogni giorno lavorativo
+          const details = workingDays.map((date) => {
+            const { week, mese, anno } = calculateDateFields(date)
+            return {
+              request_id: requestData.id,
+              user_id: data.user_id,
+              data_riferimento: formatDateToString(date),
+              ore: 8,
+              week,
+              mese,
+              anno,
+              fascia_oraria: 'full_day',
+            }
+          })
+
+          const { error: detailsError } = await supabase
+            .from('ferie_details')
+            .insert(details)
+
+          if (detailsError) {
+            // Se fallisce l'inserimento dei dettagli, elimina la richiesta
+            await supabase.from('ferie_requests').delete().eq('id', requestData.id)
+            throw detailsError
           }
-        })
 
-        const { error: detailsError } = await supabase
-          .from('ferie_details')
-          .insert(details)
-
-        if (detailsError) {
-          // Se fallisce l'inserimento dei dettagli, elimina la richiesta
-          await supabase.from('ferie_requests').delete().eq('id', requestData.id)
-          throw detailsError
+          toast.success(`${data.tipologia === 'ferie' ? 'Ferie' : 'Malattia'} create con successo (${workingDays.length} giorni lavorativi)`)
         }
-
-        toast.success(`${data.tipologia === 'ferie' ? 'Ferie' : 'Malattia'} create con successo (${workingDays.length} giorni lavorativi)`)
       } else if (data.tipologia === 'permesso') {
         // Gestione permesso
         const dataPermesso = parseDate(data.data_permesso)
@@ -208,42 +327,82 @@ export function FerieActionDialog({
 
         const { week, mese, anno } = calculateDateFields(dataPermesso)
 
-        // Crea la richiesta
-        const { data: requestData, error: requestError } = await supabase
-          .from('ferie_requests')
-          .insert({
-            user_id: data.user_id,
-            tipologia: 'permesso',
-            stato: 'pending',
-            note_richiesta: data.note_richiesta || null,
-            totale_ore_richieste: data.ore_permesso,
-          })
-          .select()
-          .single()
+        if (isEdit && requestId) {
+          // Modifica: elimina vecchio dettaglio e aggiorna la richiesta
+          const { error: deleteError } = await supabase
+            .from('ferie_details')
+            .delete()
+            .eq('request_id', requestId)
 
-        if (requestError) throw requestError
+          if (deleteError) throw deleteError
 
-        // Crea un solo dettaglio
-        const { error: detailsError } = await supabase
-          .from('ferie_details')
-          .insert({
-            request_id: requestData.id,
-            user_id: data.user_id,
-            data_riferimento: formatDateToString(dataPermesso),
-            ore: data.ore_permesso,
-            week,
-            mese,
-            anno,
-            fascia_oraria: data.fascia_oraria || 'full_day',
-          })
+          const { error: updateError } = await supabase
+            .from('ferie_requests')
+            .update({
+              user_id: data.user_id,
+              tipologia: 'permesso',
+              note_richiesta: data.note_richiesta || null,
+              totale_ore_richieste: data.ore_permesso,
+            })
+            .eq('id', requestId)
 
-        if (detailsError) {
-          // Se fallisce l'inserimento del dettaglio, elimina la richiesta
-          await supabase.from('ferie_requests').delete().eq('id', requestData.id)
-          throw detailsError
+          if (updateError) throw updateError
+
+          // Crea il nuovo dettaglio
+          const { error: detailsError } = await supabase
+            .from('ferie_details')
+            .insert({
+              request_id: requestId,
+              user_id: data.user_id,
+              data_riferimento: formatDateToString(dataPermesso),
+              ore: data.ore_permesso,
+              week,
+              mese,
+              anno,
+              fascia_oraria: data.fascia_oraria || 'full_day',
+            })
+
+          if (detailsError) throw detailsError
+
+          toast.success('Permesso aggiornato con successo')
+        } else {
+          // Crea nuova richiesta
+          const { data: requestData, error: requestError } = await supabase
+            .from('ferie_requests')
+            .insert({
+              user_id: data.user_id,
+              tipologia: 'permesso',
+              stato: 'pending',
+              note_richiesta: data.note_richiesta || null,
+              totale_ore_richieste: data.ore_permesso,
+            })
+            .select()
+            .single()
+
+          if (requestError) throw requestError
+
+          // Crea un solo dettaglio
+          const { error: detailsError } = await supabase
+            .from('ferie_details')
+            .insert({
+              request_id: requestData.id,
+              user_id: data.user_id,
+              data_riferimento: formatDateToString(dataPermesso),
+              ore: data.ore_permesso,
+              week,
+              mese,
+              anno,
+              fascia_oraria: data.fascia_oraria || 'full_day',
+            })
+
+          if (detailsError) {
+            // Se fallisce l'inserimento del dettaglio, elimina la richiesta
+            await supabase.from('ferie_requests').delete().eq('id', requestData.id)
+            throw detailsError
+          }
+
+          toast.success('Permesso creato con successo')
         }
-
-        toast.success('Permesso creato con successo')
       }
 
       await queryClient.invalidateQueries({ queryKey: ['ferie'] })
@@ -281,13 +440,18 @@ export function FerieActionDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className='sm:max-w-4xl max-h-[90vh] overflow-y-auto'>
         <DialogHeader>
-          <DialogTitle>Nuova Richiesta</DialogTitle>
+          <DialogTitle>{isEdit ? 'Visualizza Richiesta' : 'Nuova Richiesta'}</DialogTitle>
           <DialogDescription>
-            Crea una nuova richiesta di ferie, permesso o malattia.
+            {isEdit ? 'Visualizza i dettagli della richiesta di ferie, permesso o malattia.' : 'Crea una nuova richiesta di ferie, permesso o malattia.'}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
+            {isLoadingRequest && (
+              <div className='text-center py-4 text-muted-foreground'>
+                Caricamento dati...
+              </div>
+            )}
             <div className='grid grid-cols-2 gap-4'>
               <FormField
                 control={form.control}
@@ -296,11 +460,13 @@ export function FerieActionDialog({
                   <FormItem>
                     <FormLabel>Utente *</FormLabel>
                     <FormControl>
-                      <UserCombobox
-                        value={field.value ?? null}
-                        onValueChange={field.onChange}
-                        placeholder='Seleziona utente...'
-                      />
+                      <div className={isEdit ? 'pointer-events-none opacity-60' : ''}>
+                        <UserCombobox
+                          value={field.value ?? null}
+                          onValueChange={field.onChange}
+                          placeholder='Seleziona utente...'
+                        />
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -315,9 +481,10 @@ export function FerieActionDialog({
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
+                      disabled={isEdit}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger disabled={isEdit}>
                           <SelectValue placeholder='Seleziona tipologia...' />
                         </SelectTrigger>
                       </FormControl>
@@ -343,15 +510,17 @@ export function FerieActionDialog({
                     <FormItem>
                       <FormLabel>Data inizio *</FormLabel>
                       <FormControl>
-                        <DatePicker
-                          selected={parseDate(field.value)}
-                          onSelect={(date) => {
-                            const dateString = formatDateToString(date)
-                            field.onChange(dateString)
-                          }}
-                          placeholder='Seleziona data inizio...'
-                          allowFutureDates={true}
-                        />
+                        <div className={isEdit ? 'pointer-events-none opacity-60' : ''}>
+                          <DatePicker
+                            selected={parseDate(field.value)}
+                            onSelect={(date) => {
+                              const dateString = formatDateToString(date)
+                              field.onChange(dateString)
+                            }}
+                            placeholder='Seleziona data inizio...'
+                            allowFutureDates={true}
+                          />
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -364,15 +533,17 @@ export function FerieActionDialog({
                     <FormItem>
                       <FormLabel>Data fine *</FormLabel>
                       <FormControl>
-                        <DatePicker
-                          selected={parseDate(field.value)}
-                          onSelect={(date) => {
-                            const dateString = formatDateToString(date)
-                            field.onChange(dateString)
-                          }}
-                          placeholder='Seleziona data fine...'
-                          allowFutureDates={true}
-                        />
+                        <div className={isEdit ? 'pointer-events-none opacity-60' : ''}>
+                          <DatePicker
+                            selected={parseDate(field.value)}
+                            onSelect={(date) => {
+                              const dateString = formatDateToString(date)
+                              field.onChange(dateString)
+                            }}
+                            placeholder='Seleziona data fine...'
+                            allowFutureDates={true}
+                          />
+                        </div>
                       </FormControl>
                       {workingDaysPreview !== null && (
                         <FormDescription>
@@ -396,15 +567,17 @@ export function FerieActionDialog({
                     <FormItem>
                       <FormLabel>Data permesso *</FormLabel>
                       <FormControl>
-                        <DatePicker
-                          selected={parseDate(field.value)}
-                          onSelect={(date) => {
-                            const dateString = formatDateToString(date)
-                            field.onChange(dateString)
-                          }}
-                          placeholder='Seleziona data...'
-                          allowFutureDates={true}
-                        />
+                        <div className={isEdit ? 'pointer-events-none opacity-60' : ''}>
+                          <DatePicker
+                            selected={parseDate(field.value)}
+                            onSelect={(date) => {
+                              const dateString = formatDateToString(date)
+                              field.onChange(dateString)
+                            }}
+                            placeholder='Seleziona data...'
+                            allowFutureDates={true}
+                          />
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -425,6 +598,8 @@ export function FerieActionDialog({
                           {...field}
                           value={field.value ?? ''}
                           onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : 0)}
+                          disabled={isEdit}
+                          readOnly={isEdit}
                         />
                       </FormControl>
                       <FormDescription>Massimo 8 ore</FormDescription>
@@ -445,9 +620,10 @@ export function FerieActionDialog({
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value || 'full_day'}
+                      disabled={isEdit}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger disabled={isEdit}>
                           <SelectValue placeholder='Seleziona fascia oraria...' />
                         </SelectTrigger>
                       </FormControl>
@@ -474,6 +650,8 @@ export function FerieActionDialog({
                       {...field}
                       value={field.value || ''}
                       placeholder='Inserisci eventuali note...'
+                      disabled={isEdit}
+                      readOnly={isEdit}
                     />
                   </FormControl>
                   <FormMessage />
@@ -481,9 +659,13 @@ export function FerieActionDialog({
               )}
             />
 
-            <DialogFooter>
-              <Button type='submit'>Salva</Button>
-            </DialogFooter>
+            {!isEdit && (
+              <DialogFooter>
+                <Button type='submit' disabled={isLoadingRequest}>
+                  {isLoadingRequest ? 'Caricamento...' : 'Salva'}
+                </Button>
+              </DialogFooter>
+            )}
           </form>
         </Form>
       </DialogContent>

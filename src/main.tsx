@@ -14,6 +14,7 @@ import { DirectionProvider } from './context/direction-provider'
 import { FontProvider } from './context/font-provider'
 import { ThemeProvider } from './context/theme-provider'
 import { EnumsProvider } from './context/enums-provider'
+import { UserProvider } from './context/user-provider'
 // Generated Routes
 import { routeTree } from './routeTree.gen'
 // Styles
@@ -95,15 +96,17 @@ if (!rootElement.innerHTML) {
   root.render(
     <StrictMode>
       <QueryClientProvider client={queryClient}>
-        <EnumsProvider>
-          <ThemeProvider>
-            <FontProvider>
-              <DirectionProvider>
-                <RouterProvider router={router} />
-              </DirectionProvider>
-            </FontProvider>
-          </ThemeProvider>
-        </EnumsProvider>
+        <UserProvider>
+          <EnumsProvider>
+            <ThemeProvider>
+              <FontProvider>
+                <DirectionProvider>
+                  <RouterProvider router={router} />
+                </DirectionProvider>
+              </FontProvider>
+            </ThemeProvider>
+          </EnumsProvider>
+        </UserProvider>
       </QueryClientProvider>
     </StrictMode>
   )

@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import useDialogState from '@/hooks/use-dialog-state'
 import { Ferie } from '../data/schema'
 
-type FerieDialogType = 'add' | 'edit' | 'delete'
+type FerieDialogType = 'add' | 'edit' | 'delete' | 'approve' | 'reject'
 
 interface FerieContextType {
   open: FerieDialogType | null
