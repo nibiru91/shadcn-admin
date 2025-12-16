@@ -7,6 +7,7 @@ import { toast } from 'sonner'
 import { useQueryClient } from '@tanstack/react-query'
 import React, { useEffect } from 'react'
 import { getISOWeek, getISOWeekYear, startOfISOWeek } from 'date-fns'
+import { calculateISOWeekFromDate } from '@/lib/date-utils'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import {
@@ -173,59 +174,7 @@ export function PianificazioneActionDialog({
 
   // Calcola settimana ISO, mese e anno da una data
   const calculateFromDate = (date: Date) => {
-    const gregorianYear = date.getFullYear()
-    const isoWeek = getISOWeek(date)
-    const isoWeekYear = getISOWeekYear(date)
-    
-    // Se l'anno ISO differisce dall'anno gregoriano, significa che la data appartiene
-    // alla settimana ISO 1 dell'anno successivo. In questo caso, dobbiamo calcolare
-    // l'ultima settimana dell'anno gregoriano corrente invece.
-    let week: number
-    let month: number
-    let year: number
-    
-    if (isoWeekYear !== gregorianYear) {
-      // Se l'anno ISO differisce dall'anno gregoriano, significa che la data appartiene
-      // alla settimana ISO 1 dell'anno successivo. In questo caso, dobbiamo usare
-      // l'ultima settimana dell'anno gregoriano corrente.
-      // Cerchiamo l'ultima settimana che appartiene all'anno corrente controllando
-      // i giorni di fine dicembre
-      let lastWeek = 0
-      let lastWeekDate: Date | null = null
-      for (let day = 31; day >= 28; day--) {
-        const testDate = new Date(gregorianYear, 11, day)
-        const testIsoYear = getISOWeekYear(testDate)
-        if (testIsoYear === gregorianYear) {
-          const testWeek = getISOWeek(testDate)
-          if (testWeek > lastWeek) {
-            lastWeek = testWeek
-            lastWeekDate = testDate
-          }
-        }
-      }
-      
-      if (lastWeekDate) {
-        week = lastWeek
-        const startOfWeek = startOfISOWeek(lastWeekDate)
-        month = startOfWeek.getMonth() + 1
-        year = startOfWeek.getFullYear()
-      } else {
-        // Fallback: usa il 28 dicembre (dovrebbe sempre appartenere all'anno corrente)
-        const dec28 = new Date(gregorianYear, 11, 28)
-        week = getISOWeek(dec28)
-        const startOfWeek = startOfISOWeek(dec28)
-        month = startOfWeek.getMonth() + 1
-        year = startOfWeek.getFullYear()
-      }
-    } else {
-      // Anno ISO e gregoriano coincidono, usa i valori ISO normali
-      week = isoWeek
-      const startOfWeek = startOfISOWeek(date)
-      month = startOfWeek.getMonth() + 1
-      year = startOfWeek.getFullYear()
-    }
-    
-    return { week, mese: month, anno: year }
+    return calculateISOWeekFromDate(date)
   }
 
   // Calcola mese e anno da una settimana ISO e anno gregoriano
