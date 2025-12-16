@@ -146,6 +146,13 @@ export const pianificazioneColumns: ColumnDef<Planning>[] = [
       const value = row.getValue<number>('week')
       return value !== null && value !== undefined ? String(value) : '-'
     },
+    filterFn: (row, id, value) => {
+      if (!Array.isArray(value) || value.length === 0) return true
+      const weekValue = row.getValue<number>(id)
+      // Converti le stringhe in numeri per il confronto
+      const numericValues = value.map((v) => typeof v === 'string' ? parseInt(v, 10) : v)
+      return numericValues.includes(weekValue)
+    },
   },
   {
     accessorKey: 'mese',

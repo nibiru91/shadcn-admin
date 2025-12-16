@@ -91,6 +91,7 @@ export function PianificazioneTable({ data, search, navigate }: DataTableProps) 
       { columnId: 'detail_search', searchKey: 'detail', type: 'string' },
       { columnId: 'user_id', searchKey: 'user_id', type: 'array' },
       { columnId: 'commessa', searchKey: 'commessa', type: 'array' },
+      { columnId: 'week', searchKey: 'week', type: 'array' },
       { columnId: 'anno', searchKey: 'anno', type: 'array' },
       { columnId: 'mese', searchKey: 'mese', type: 'array' },
       { 
@@ -145,6 +146,7 @@ export function PianificazioneTable({ data, search, navigate }: DataTableProps) 
   // Calcola le opzioni dinamiche dai valori unici nel DB
   const userColumn = table.getColumn('user_id')
   const commessaColumn = table.getColumn('commessa')
+  const weekColumn = table.getColumn('week')
   const annoColumn = table.getColumn('anno')
   const meseColumn = table.getColumn('mese')
   const delayableColumn = table.getColumn('is_delayable')
@@ -197,6 +199,13 @@ export function PianificazioneTable({ data, search, navigate }: DataTableProps) 
         value: String(c.id),
       }))
 
+  const weekOptions = weekColumn
+    ? Array.from(weekColumn.getFacetedUniqueValues().keys())
+        .filter((value): value is number => value !== null && value !== undefined)
+        .sort((a, b) => b - a)
+        .map((value) => ({ label: String(value), value: String(value) }))
+    : []
+
   const annoOptions = annoColumn
     ? Array.from(annoColumn.getFacetedUniqueValues().keys())
         .filter((value): value is number => value !== null && value !== undefined)
@@ -243,6 +252,15 @@ export function PianificazioneTable({ data, search, navigate }: DataTableProps) 
                   columnId: 'commessa',
                   title: 'Commessa',
                   options: commessaOptions,
+                },
+              ]
+            : []),
+          ...(weekOptions.length > 0
+            ? [
+                {
+                  columnId: 'week',
+                  title: 'Settimana',
+                  options: weekOptions,
                 },
               ]
             : []),
