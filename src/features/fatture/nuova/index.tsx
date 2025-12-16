@@ -1,8 +1,8 @@
 'use client'
 
 import * as React from 'react'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useNavigate } from '@tanstack/react-router'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useNavigate, useSearch } from '@tanstack/react-router'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { Header } from '@/components/layout/header'
@@ -18,7 +18,7 @@ import { StepCampiTestata } from './components/step-campi-testata'
 import { StepRigheFattura } from './components/step-righe-fattura'
 import { TotaliFattura } from './components/totali-fattura'
 import { Riga } from './data/wizard-schema'
-import { validaRighe, calcolaTotaliFattura } from './utils/fattura-wizard-utils'
+import { validaRighe, calcolaTotaliFattura, generaIdRiga } from './utils/fattura-wizard-utils'
 
 type WizardState = {
   tipoFattura: 'emessa' | 'ricevuta' | undefined
@@ -158,14 +158,65 @@ async function salvaFattura(state: WizardState) {
   return idFattura
 }
 
+// Funzione per caricare i timesheet dal database
+async function fetchTimesheetByIds(timesheetIds: number[]) {
+  const { data, error } = await supabase
+    .from('timesheet')
+    .select('*')
+    .in('id', timesheetIds)
+
+  if (error) throw new Error(error.message)
+  return data || []
+}
+
+// Funzione per caricare la commessa completa
+async function fetchCommessa(commessaId: number) {
+  const { data, error } = await supabase
+    .from('commesse')
+    .select('id, title, tariffa_oraria')
+    .eq('id', commessaId)
+    .single()
+
+  if (error) throw new Error(error.message)
+  return data
+}
+
 export function NuovaFattura() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const search = useSearch({ from: '/_authenticated/fatture/nuova/' })
+
+  // Leggi i parametri URL
+  const timesheetIdsParam = search.timesheetIds
+  const commessaIdParam = search.commessaId
+  const idClienteParam = search.idCliente
+
+  const timesheetIds = timesheetIdsParam
+    ? timesheetIdsParam.split(',').map((id) => parseInt(id, 10)).filter((id) => !isNaN(id))
+    : []
+  const commessaId = commessaIdParam ? parseInt(commessaIdParam, 10) : undefined
+  const idCliente = idClienteParam ? parseInt(idClienteParam, 10) : undefined
+
+  const hasUrlParams = timesheetIds.length > 0 && commessaId && idCliente
+
+  // Carica timesheet se ci sono parametri URL
+  const { data: timesheetData = [] } = useQuery({
+    queryKey: ['timesheet-for-invoice', timesheetIds],
+    queryFn: () => fetchTimesheetByIds(timesheetIds),
+    enabled: hasUrlParams && timesheetIds.length > 0,
+  })
+
+  // Carica commessa se c'è il parametro
+  const { data: commessaData } = useQuery({
+    queryKey: ['commessa-for-invoice', commessaId],
+    queryFn: () => fetchCommessa(commessaId!),
+    enabled: hasUrlParams && !!commessaId,
+  })
 
   const [state, setState] = React.useState<WizardState>({
-    tipoFattura: undefined,
-    idCliente: undefined,
-    aziendaConfermata: false,
+    tipoFattura: hasUrlParams ? 'emessa' : undefined,
+    idCliente: hasUrlParams ? idCliente : undefined,
+    aziendaConfermata: hasUrlParams,
     numero: '',
     dataEmissione: undefined,
     metodoPagamento: undefined,
@@ -174,6 +225,40 @@ export function NuovaFattura() {
     noteInterne: undefined,
     righe: [],
   })
+
+  const [rigaGenerata, setRigaGenerata] = React.useState(false)
+
+  // Genera la riga automaticamente quando i dati sono pronti
+  React.useEffect(() => {
+    if (hasUrlParams && timesheetData.length > 0 && commessaData && !rigaGenerata) {
+      // Calcola la somma delle ore billable
+      const totaleOre = timesheetData.reduce((sum, t) => {
+        return sum + (t.ore_billable || t.ore_lavorate || 0)
+      }, 0)
+
+      // Crea la riga aggregata
+      const riga: Riga = {
+        id: generaIdRiga(),
+        descrizione: `Timesheet - ${commessaData.title}`,
+        quantita: totaleOre,
+        prezzo_unitario: commessaData.tariffa_oraria || 0,
+        sconto_percentuale: 0,
+        aliquota_iva: null,
+        codice_articolo: null,
+        unita_misura: 'ore',
+        id_commessa: commessaId || null,
+        timesheet_ids: timesheetIds,
+        ordine: 0,
+      }
+
+      setState((prev) => ({
+        ...prev,
+        righe: [riga],
+      }))
+      
+      setRigaGenerata(true)
+    }
+  }, [hasUrlParams, timesheetData, commessaData, commessaId, idCliente, timesheetIds, rigaGenerata])
 
   const salvaMutation = useMutation({
     mutationFn: salvaFattura,
