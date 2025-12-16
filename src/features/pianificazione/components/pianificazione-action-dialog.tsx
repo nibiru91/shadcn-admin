@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
 import { useQueryClient } from '@tanstack/react-query'
 import React, { useEffect } from 'react'
+import { getISOWeek, getISOWeekYear, startOfISOWeek } from 'date-fns'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import {
@@ -170,8 +171,59 @@ export function PianificazioneActionDialog({
     return `${year}-${month}-${day}`
   }
 
-  // Genera opzioni per mese (1-12)
-  const meseOptions = Array.from({ length: 12 }, (_, i) => i + 1)
+  // Calcola settimana ISO, mese e anno da una data
+  const calculateFromDate = (date: Date) => {
+    const isoWeek = getISOWeek(date)
+    const isoWeekYear = getISOWeekYear(date)
+    const startOfWeek = startOfISOWeek(date)
+    const month = startOfWeek.getMonth() + 1
+    const year = startOfWeek.getFullYear()
+    return { week: isoWeek, mese: month, anno: year }
+  }
+
+  // Calcola mese e anno da una settimana ISO e anno gregoriano
+  // L'anno passato è l'anno gregoriano. Troviamo il primo lunedì della settimana ISO 1
+  // La settimana ISO 1 inizia il lunedì della settimana che contiene il 4 gennaio
+  const calculateFromWeek = (week: number, gregorianYear: number) => {
+    // Trova il 4 gennaio dell'anno gregoriano
+    const jan4 = new Date(gregorianYear, 0, 4)
+    // Trova il primo lunedì della settimana ISO che contiene il 4 gennaio
+    const weekStart = startOfISOWeek(jan4)
+    // Aggiungi (week - 1) settimane per arrivare alla settimana desiderata
+    const targetWeekStart = new Date(weekStart)
+    targetWeekStart.setDate(weekStart.getDate() + (week - 1) * 7)
+    
+    const month = targetWeekStart.getMonth() + 1
+    const year = targetWeekStart.getFullYear()
+    return { mese: month, anno: year }
+  }
+
+  // Watch dei campi giorno e settimana per calcolare automaticamente i valori
+  const giorno = form.watch('giorno')
+  const week = form.watch('week')
+  const anno = form.watch('anno')
+
+  // Calcola valori quando cambia il giorno
+  useEffect(() => {
+    if (giorno) {
+      const date = parseDate(giorno)
+      if (date) {
+        const calculated = calculateFromDate(date)
+        form.setValue('week', calculated.week, { shouldValidate: false })
+        form.setValue('mese', calculated.mese, { shouldValidate: false })
+        form.setValue('anno', calculated.anno, { shouldValidate: false })
+      }
+    }
+  }, [giorno, form])
+
+  // Calcola mese e anno quando cambia la settimana (solo se giorno non è selezionato)
+  useEffect(() => {
+    if (!giorno && week && anno) {
+      const calculated = calculateFromWeek(week, anno)
+      form.setValue('mese', calculated.mese, { shouldValidate: false })
+      form.setValue('anno', calculated.anno, { shouldValidate: false })
+    }
+  }, [week, anno, giorno, form])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -264,15 +316,28 @@ export function PianificazioneActionDialog({
                 <FormItem>
                   <FormLabel>Giorno</FormLabel>
                   <FormControl>
-                    <DatePicker
-                      selected={parseDate(field.value)}
-                      onSelect={(date) => {
-                        const dateString = formatDateToString(date)
-                        field.onChange(dateString)
-                      }}
-                      placeholder='Seleziona data...'
-                      allowFutureDates={true}
-                    />
+                    <div className='flex gap-2'>
+                      <DatePicker
+                        selected={parseDate(field.value)}
+                        onSelect={(date) => {
+                          const dateString = formatDateToString(date)
+                          field.onChange(dateString)
+                        }}
+                        placeholder='Seleziona data...'
+                        allowFutureDates={true}
+                      />
+                      {field.value && (
+                        <Button
+                          type='button'
+                          variant='outline'
+                          onClick={() => {
+                            field.onChange(null)
+                          }}
+                        >
+                          Pulisci
+                        </Button>
+                      )}
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -294,8 +359,13 @@ export function PianificazioneActionDialog({
                         {...field}
                         value={field.value ?? ''}
                         onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value, 10) : 1)}
+                        disabled={!!giorno}
+                        readOnly={!!giorno}
                       />
                     </FormControl>
+                    <FormDescription>
+                      {giorno ? 'Calcolata automaticamente dal giorno selezionato' : 'Settimana ISO (1-53)'}
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -313,9 +383,12 @@ export function PianificazioneActionDialog({
                         max='12'
                         {...field}
                         value={field.value ?? ''}
-                        onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value, 10) : 1)}
+                        disabled={true}
+                        readOnly={true}
+                        className='bg-muted cursor-not-allowed'
                       />
                     </FormControl>
+                    <FormDescription>Calcolato automaticamente</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -333,9 +406,12 @@ export function PianificazioneActionDialog({
                         max='2100'
                         {...field}
                         value={field.value ?? ''}
-                        onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value, 10) : new Date().getFullYear())}
+                        disabled={true}
+                        readOnly={true}
+                        className='bg-muted cursor-not-allowed'
                       />
                     </FormControl>
+                    <FormDescription>Calcolato automaticamente</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}

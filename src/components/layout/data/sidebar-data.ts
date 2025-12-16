@@ -24,6 +24,7 @@ import {
   Building2,
   ScrollText,
   Boxes,
+  Calendar,
 } from 'lucide-react'
 import { type SidebarData } from '../types'
 
@@ -89,6 +90,11 @@ export const sidebarData: SidebarData = {
           title: 'Pianificazione',
           url: '/pianificazione',
           icon: Boxes,
+        },
+        {
+          title: 'Ferie',
+          url: '/ferie',
+          icon: Calendar,
         },
         {
           title: 'Aziende',

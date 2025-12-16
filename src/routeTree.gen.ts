@@ -27,6 +27,7 @@ import { Route as AuthenticatedTasksIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
 import { Route as AuthenticatedPianificazioneIndexRouteImport } from './routes/_authenticated/pianificazione/index'
 import { Route as AuthenticatedHelpCenterIndexRouteImport } from './routes/_authenticated/help-center/index'
+import { Route as AuthenticatedFerieIndexRouteImport } from './routes/_authenticated/ferie/index'
 import { Route as AuthenticatedCompaniesIndexRouteImport } from './routes/_authenticated/companies/index'
 import { Route as AuthenticatedCommesseIndexRouteImport } from './routes/_authenticated/commesse/index'
 import { Route as AuthenticatedChatsIndexRouteImport } from './routes/_authenticated/chats/index'
@@ -130,6 +131,11 @@ const AuthenticatedHelpCenterIndexRoute =
     path: '/help-center/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedFerieIndexRoute = AuthenticatedFerieIndexRouteImport.update({
+  id: '/ferie/',
+  path: '/ferie/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedCompaniesIndexRoute =
   AuthenticatedCompaniesIndexRouteImport.update({
     id: '/companies/',
@@ -205,6 +211,7 @@ export interface FileRoutesByFullPath {
   '/chats': typeof AuthenticatedChatsIndexRoute
   '/commesse': typeof AuthenticatedCommesseIndexRoute
   '/companies': typeof AuthenticatedCompaniesIndexRoute
+  '/ferie': typeof AuthenticatedFerieIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
   '/pianificazione': typeof AuthenticatedPianificazioneIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
@@ -232,6 +239,7 @@ export interface FileRoutesByTo {
   '/chats': typeof AuthenticatedChatsIndexRoute
   '/commesse': typeof AuthenticatedCommesseIndexRoute
   '/companies': typeof AuthenticatedCompaniesIndexRoute
+  '/ferie': typeof AuthenticatedFerieIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
   '/pianificazione': typeof AuthenticatedPianificazioneIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
@@ -262,6 +270,7 @@ export interface FileRoutesById {
   '/_authenticated/chats/': typeof AuthenticatedChatsIndexRoute
   '/_authenticated/commesse/': typeof AuthenticatedCommesseIndexRoute
   '/_authenticated/companies/': typeof AuthenticatedCompaniesIndexRoute
+  '/_authenticated/ferie/': typeof AuthenticatedFerieIndexRoute
   '/_authenticated/help-center/': typeof AuthenticatedHelpCenterIndexRoute
   '/_authenticated/pianificazione/': typeof AuthenticatedPianificazioneIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
@@ -292,6 +301,7 @@ export interface FileRouteTypes {
     | '/chats'
     | '/commesse'
     | '/companies'
+    | '/ferie'
     | '/help-center'
     | '/pianificazione'
     | '/settings/'
@@ -319,6 +329,7 @@ export interface FileRouteTypes {
     | '/chats'
     | '/commesse'
     | '/companies'
+    | '/ferie'
     | '/help-center'
     | '/pianificazione'
     | '/settings'
@@ -348,6 +359,7 @@ export interface FileRouteTypes {
     | '/_authenticated/chats/'
     | '/_authenticated/commesse/'
     | '/_authenticated/companies/'
+    | '/_authenticated/ferie/'
     | '/_authenticated/help-center/'
     | '/_authenticated/pianificazione/'
     | '/_authenticated/settings/'
@@ -497,6 +509,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHelpCenterIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/ferie/': {
+      id: '/_authenticated/ferie/'
+      path: '/ferie'
+      fullPath: '/ferie'
+      preLoaderRoute: typeof AuthenticatedFerieIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/companies/': {
       id: '/_authenticated/companies/'
       path: '/companies'
@@ -594,6 +613,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedChatsIndexRoute: typeof AuthenticatedChatsIndexRoute
   AuthenticatedCommesseIndexRoute: typeof AuthenticatedCommesseIndexRoute
   AuthenticatedCompaniesIndexRoute: typeof AuthenticatedCompaniesIndexRoute
+  AuthenticatedFerieIndexRoute: typeof AuthenticatedFerieIndexRoute
   AuthenticatedHelpCenterIndexRoute: typeof AuthenticatedHelpCenterIndexRoute
   AuthenticatedPianificazioneIndexRoute: typeof AuthenticatedPianificazioneIndexRoute
   AuthenticatedTasksIndexRoute: typeof AuthenticatedTasksIndexRoute
@@ -608,6 +628,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedChatsIndexRoute: AuthenticatedChatsIndexRoute,
   AuthenticatedCommesseIndexRoute: AuthenticatedCommesseIndexRoute,
   AuthenticatedCompaniesIndexRoute: AuthenticatedCompaniesIndexRoute,
+  AuthenticatedFerieIndexRoute: AuthenticatedFerieIndexRoute,
   AuthenticatedHelpCenterIndexRoute: AuthenticatedHelpCenterIndexRoute,
   AuthenticatedPianificazioneIndexRoute: AuthenticatedPianificazioneIndexRoute,
   AuthenticatedTasksIndexRoute: AuthenticatedTasksIndexRoute,
