@@ -13,12 +13,25 @@ const getStatoBadgeVariant = (stato: string) => {
     case 'emessa':
       return 'default'
     case 'pagata':
-      return 'default'
+      return 'outline'
+    case 'pagata parzialmente':
+      return 'outline'
     case 'annullata':
       return 'destructive'
     default:
       return 'secondary'
   }
+}
+
+const getStatoBadgeClassName = (stato: string) => {
+  const statoLower = stato?.toLowerCase()
+  if (statoLower === 'pagata parzialmente') {
+    return 'border-yellow-500 bg-yellow-50 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-400 dark:border-yellow-600'
+  }
+  if (statoLower === 'pagata') {
+    return 'border-green-500 bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400 dark:border-green-600'
+  }
+  return ''
 }
 
 export const fattureColumns: ColumnDef<Fattura>[] = [
@@ -138,7 +151,7 @@ export const fattureColumns: ColumnDef<Fattura>[] = [
     cell: ({ row }) => {
       const value = row.getValue<string>('stato')
       return (
-        <Badge variant={getStatoBadgeVariant(value)}>
+        <Badge variant={getStatoBadgeVariant(value)} className={getStatoBadgeClassName(value)}>
           {value || 'bozza'}
         </Badge>
       )
