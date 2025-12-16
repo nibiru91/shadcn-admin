@@ -12,12 +12,14 @@ type DatePickerProps = {
   selected: Date | undefined
   onSelect: (date: Date | undefined) => void
   placeholder?: string
+  allowFutureDates?: boolean
 }
 
 export function DatePicker({
   selected,
   onSelect,
   placeholder = 'Pick a date',
+  allowFutureDates = false,
 }: DatePickerProps) {
   return (
     <Popover>
@@ -41,9 +43,11 @@ export function DatePicker({
           captionLayout='dropdown'
           selected={selected}
           onSelect={onSelect}
-          disabled={(date: Date) =>
-            date > new Date() || date < new Date('1900-01-01')
-          }
+          disabled={(date: Date) => {
+            if (date < new Date('1900-01-01')) return true
+            if (!allowFutureDates && date > new Date()) return true
+            return false
+          }}
         />
       </PopoverContent>
     </Popover>

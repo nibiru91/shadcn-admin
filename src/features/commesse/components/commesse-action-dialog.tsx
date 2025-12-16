@@ -5,7 +5,6 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
 import { useQueryClient } from '@tanstack/react-query'
-import { parseISO } from 'date-fns'
 import React, { useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useEnums } from '@/context/enums-provider'
@@ -102,9 +101,6 @@ export function CommesseActionDialog({
 
   // Aggiorna il form quando currentRow cambia E quando enum sono caricati E quando il dialog è aperto
   useEffect(() => {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/df847be0-25f0-4c0b-ba0a-7bc1fdb8a606',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'commesse-action-dialog.tsx:148',message:'Form reset effect triggered',data:{open,isEdit,currentRowId:currentRow?.id,isLoadingEnums,lastResetRowId:lastResetRowIdRef.current,lastResetOpen:lastResetOpenRef.current},timestamp:Date.now(),sessionId:'debug-session',runId:'run3',hypothesisId:'B'})}).catch(()=>{});
-    // #endregion
     // Non resettare il form se il dialog non è aperto
     if (!open) {
       // Reset del ref quando il dialog si chiude
@@ -112,9 +108,6 @@ export function CommesseActionDialog({
         lastResetRowIdRef.current = null
         lastResetOpenRef.current = false
       }
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/df847be0-25f0-4c0b-ba0a-7bc1fdb8a606',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'commesse-action-dialog.tsx:157',message:'Dialog not open, skipping reset',data:{open},timestamp:Date.now(),sessionId:'debug-session',runId:'run3',hypothesisId:'B'})}).catch(()=>{});
-      // #endregion
       return
     }
 
@@ -224,14 +217,26 @@ export function CommesseActionDialog({
     }
   }
 
-  // Helper per convertire stringa ISO a Date
+  // Helper per convertire stringa ISO a Date (local time, no timezone conversion)
   const parseDate = (dateString: string | null | undefined): Date | undefined => {
     if (!dateString) return undefined
     try {
-      return parseISO(dateString)
+      // Parse date string as local date (YYYY-MM-DD) to avoid timezone issues
+      const [year, month, day] = dateString.split('-').map(Number)
+      if (isNaN(year) || isNaN(month) || isNaN(day)) return undefined
+      return new Date(year, month - 1, day)
     } catch {
       return undefined
     }
+  }
+
+  // Helper per convertire Date a stringa YYYY-MM-DD (local time, no timezone conversion)
+  const formatDateToString = (date: Date | undefined): string | null => {
+    if (!date) return null
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
   }
 
   return (
@@ -467,7 +472,10 @@ export function CommesseActionDialog({
                     <FormControl>
                       <DatePicker
                         selected={parseDate(field.value)}
-                        onSelect={(date) => field.onChange(date ? date.toISOString().split('T')[0] : null)}
+                        onSelect={(date) => {
+                          const dateString = formatDateToString(date)
+                          field.onChange(dateString)
+                        }}
                         placeholder='Seleziona data...'
                       />
                     </FormControl>
@@ -484,7 +492,10 @@ export function CommesseActionDialog({
                     <FormControl>
                       <DatePicker
                         selected={parseDate(field.value)}
-                        onSelect={(date) => field.onChange(date ? date.toISOString().split('T')[0] : null)}
+                        onSelect={(date) => {
+                          const dateString = formatDateToString(date)
+                          field.onChange(dateString)
+                        }}
                         placeholder='Seleziona data...'
                       />
                     </FormControl>
@@ -501,7 +512,10 @@ export function CommesseActionDialog({
                     <FormControl>
                       <DatePicker
                         selected={parseDate(field.value)}
-                        onSelect={(date) => field.onChange(date ? date.toISOString().split('T')[0] : null)}
+                        onSelect={(date) => {
+                          const dateString = formatDateToString(date)
+                          field.onChange(dateString)
+                        }}
                         placeholder='Seleziona data...'
                       />
                     </FormControl>
@@ -521,7 +535,10 @@ export function CommesseActionDialog({
                     <FormControl>
                       <DatePicker
                         selected={parseDate(field.value)}
-                        onSelect={(date) => field.onChange(date ? date.toISOString().split('T')[0] : null)}
+                        onSelect={(date) => {
+                          const dateString = formatDateToString(date)
+                          field.onChange(dateString)
+                        }}
                         placeholder='Seleziona data...'
                       />
                     </FormControl>
@@ -538,8 +555,12 @@ export function CommesseActionDialog({
                     <FormControl>
                       <DatePicker
                         selected={parseDate(field.value)}
-                        onSelect={(date) => field.onChange(date ? date.toISOString().split('T')[0] : null)}
+                        onSelect={(date) => {
+                          const dateString = formatDateToString(date)
+                          field.onChange(dateString)
+                        }}
                         placeholder='Seleziona data...'
+                        allowFutureDates={true}
                       />
                     </FormControl>
                     <FormMessage />
@@ -558,7 +579,10 @@ export function CommesseActionDialog({
                     <FormControl>
                       <DatePicker
                         selected={parseDate(field.value)}
-                        onSelect={(date) => field.onChange(date ? date.toISOString().split('T')[0] : null)}
+                        onSelect={(date) => {
+                          const dateString = formatDateToString(date)
+                          field.onChange(dateString)
+                        }}
                         placeholder='Seleziona data...'
                       />
                     </FormControl>
@@ -575,7 +599,10 @@ export function CommesseActionDialog({
                     <FormControl>
                       <DatePicker
                         selected={parseDate(field.value)}
-                        onSelect={(date) => field.onChange(date ? date.toISOString().split('T')[0] : null)}
+                        onSelect={(date) => {
+                          const dateString = formatDateToString(date)
+                          field.onChange(dateString)
+                        }}
                         placeholder='Seleziona data...'
                       />
                     </FormControl>

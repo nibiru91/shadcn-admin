@@ -5,7 +5,6 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
 import { useQueryClient } from '@tanstack/react-query'
-import { parseISO } from 'date-fns'
 import React, { useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
@@ -149,14 +148,26 @@ export function PianificazioneActionDialog({
     }
   }
 
-  // Helper per convertire stringa ISO a Date
+  // Helper per convertire stringa ISO a Date (local time, no timezone conversion)
   const parseDate = (dateString: string | null | undefined): Date | undefined => {
     if (!dateString) return undefined
     try {
-      return parseISO(dateString)
+      // Parse date string as local date (YYYY-MM-DD) to avoid timezone issues
+      const [year, month, day] = dateString.split('-').map(Number)
+      if (isNaN(year) || isNaN(month) || isNaN(day)) return undefined
+      return new Date(year, month - 1, day)
     } catch {
       return undefined
     }
+  }
+
+  // Helper per convertire Date a stringa YYYY-MM-DD (local time, no timezone conversion)
+  const formatDateToString = (date: Date | undefined): string | null => {
+    if (!date) return null
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
   }
 
   // Genera opzioni per mese (1-12)
@@ -255,8 +266,12 @@ export function PianificazioneActionDialog({
                   <FormControl>
                     <DatePicker
                       selected={parseDate(field.value)}
-                      onSelect={(date) => field.onChange(date ? date.toISOString().split('T')[0] : null)}
+                      onSelect={(date) => {
+                        const dateString = formatDateToString(date)
+                        field.onChange(dateString)
+                      }}
                       placeholder='Seleziona data...'
+                      allowFutureDates={true}
                     />
                   </FormControl>
                   <FormMessage />
