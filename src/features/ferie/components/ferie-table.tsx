@@ -139,6 +139,10 @@ export function FerieTable({ data, search, navigate }: DataTableProps) {
             value: String(userId),
           }
         })
+        // Rimuovi duplicati basandosi sul value (ID utente)
+        .filter((option, index, self) => 
+          index === self.findIndex((o) => o.value === option.value)
+        )
         .sort((a, b) => a.label.localeCompare(b.label))
     : users.map((u) => ({
         label: getUserDisplayName(u),
