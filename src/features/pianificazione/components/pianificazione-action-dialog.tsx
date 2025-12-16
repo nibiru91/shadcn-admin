@@ -143,6 +143,7 @@ export function PianificazioneActionDialog({
         toast.success('Pianificazione creata con successo')
       }
       await queryClient.invalidateQueries({ queryKey: ['pianificazione'] })
+      await queryClient.invalidateQueries({ queryKey: ['user-stats'] })
       onOpenChange(false)
       form.reset()
     } catch (error: any) {

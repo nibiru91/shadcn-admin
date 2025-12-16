@@ -57,6 +57,7 @@ export function PianificazioneMultiDeleteDialog<TData>({
       loading: 'Eliminazione pianificazioni...',
       success: async () => {
         await queryClient.invalidateQueries({ queryKey: ['pianificazione'] })
+        await queryClient.invalidateQueries({ queryKey: ['user-stats'] })
         table.resetRowSelection()
         onOpenChange(false)
         return `Eliminate ${ids.length} pianificazione/i`

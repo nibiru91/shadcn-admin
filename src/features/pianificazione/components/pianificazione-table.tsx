@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import {
   type SortingState,
   type VisibilityState,
@@ -28,6 +28,8 @@ import { pianificazioneColumns as columns } from './pianificazione-columns'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { usePianificazione } from './pianificazione-provider'
+import { PianificazioneCardUserDetail } from './pianificazione-card-user-detail'
+import { type Filters } from './pianificazione-card-utils'
 
 type DataTableProps = {
   data: Planning[]
@@ -233,6 +235,104 @@ export function PianificazioneTable({ data, search, navigate }: DataTableProps) 
     { label: 'No', value: 'false' },
   ]
 
+  // Mappa i columnFilters al formato Filters per il componente card
+  const cardFilters: Filters = useMemo(() => {
+    const filters: Filters = {}
+
+    // user_id
+    const userIdFilter = columnFilters.find((f) => f.id === 'user_id')
+    if (userIdFilter && userIdFilter.value) {
+      const values = Array.isArray(userIdFilter.value)
+        ? userIdFilter.value
+        : [userIdFilter.value]
+      filters.user_id = values
+        .map((v) => {
+          if (typeof v === 'number') return v
+          if (typeof v === 'string') return parseInt(v, 10)
+          return null
+        })
+        .filter((v): v is number => v !== null)
+    }
+
+    // week
+    const weekFilter = columnFilters.find((f) => f.id === 'week')
+    if (weekFilter && weekFilter.value) {
+      const values = Array.isArray(weekFilter.value)
+        ? weekFilter.value
+        : [weekFilter.value]
+      filters.week = values
+        .map((v) => {
+          if (typeof v === 'number') return v
+          if (typeof v === 'string') return parseInt(v, 10)
+          return null
+        })
+        .filter((v): v is number => v !== null)
+    }
+
+    // mese
+    const meseFilter = columnFilters.find((f) => f.id === 'mese')
+    if (meseFilter && meseFilter.value) {
+      const values = Array.isArray(meseFilter.value)
+        ? meseFilter.value
+        : [meseFilter.value]
+      filters.mese = values
+        .map((v) => {
+          if (typeof v === 'number') return v
+          if (typeof v === 'string') return parseInt(v, 10)
+          return null
+        })
+        .filter((v): v is number => v !== null)
+    }
+
+    // anno
+    const annoFilter = columnFilters.find((f) => f.id === 'anno')
+    if (annoFilter && annoFilter.value) {
+      const values = Array.isArray(annoFilter.value)
+        ? annoFilter.value
+        : [annoFilter.value]
+      filters.anno = values
+        .map((v) => {
+          if (typeof v === 'number') return v
+          if (typeof v === 'string') return parseInt(v, 10)
+          return null
+        })
+        .filter((v): v is number => v !== null)
+    }
+
+    // commessa
+    const commessaFilter = columnFilters.find((f) => f.id === 'commessa')
+    if (commessaFilter && commessaFilter.value) {
+      const values = Array.isArray(commessaFilter.value)
+        ? commessaFilter.value
+        : [commessaFilter.value]
+      filters.commessa = values
+        .map((v) => {
+          if (typeof v === 'number') return v
+          if (typeof v === 'string') return parseInt(v, 10)
+          return null
+        })
+        .filter((v): v is number => v !== null)
+    }
+
+    // is_delayable
+    const delayableFilter = columnFilters.find((f) => f.id === 'is_delayable')
+    if (delayableFilter && delayableFilter.value) {
+      const values = Array.isArray(delayableFilter.value)
+        ? delayableFilter.value
+        : [delayableFilter.value]
+      filters.is_delayable = values
+        .map((v) => {
+          if (typeof v === 'boolean') return v
+          if (v === 'true' || v === true) return true
+          if (v === 'false' || v === false) return false
+          return null
+        })
+        .filter((v): v is boolean => v !== null)
+    }
+
+    return filters
+  }, [columnFilters])
+
   return (
     <div
       className={cn(
@@ -296,6 +396,10 @@ export function PianificazioneTable({ data, search, navigate }: DataTableProps) 
             options: delayableOptions,
           },
         ]}
+      />
+      <PianificazioneCardUserDetail
+        filters={cardFilters}
+        planningData={data}
       />
       <div className='overflow-hidden rounded-md border'>
         <Table>

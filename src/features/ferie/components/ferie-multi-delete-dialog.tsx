@@ -56,6 +56,7 @@ export function FerieMultiDeleteDialog<TData>({
       loading: 'Eliminazione ferie...',
       success: async () => {
         await queryClient.invalidateQueries({ queryKey: ['ferie'] })
+        await queryClient.invalidateQueries({ queryKey: ['user-stats'] })
         table.resetRowSelection()
         onOpenChange(false)
         return `Eliminate ${ids.length} ferie`

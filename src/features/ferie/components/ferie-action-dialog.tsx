@@ -403,6 +403,7 @@ export function FerieActionDialog({
       }
 
       await queryClient.invalidateQueries({ queryKey: ['ferie'] })
+      await queryClient.invalidateQueries({ queryKey: ['user-stats'] })
       onOpenChange(false)
       form.reset()
     } catch (error: any) {

@@ -143,6 +143,7 @@ export function FerieApproveDialog({
       if (error) throw error
 
       await queryClient.invalidateQueries({ queryKey: ['ferie'] })
+      await queryClient.invalidateQueries({ queryKey: ['user-stats'] })
       toast.success('Richiesta approvata con successo')
       onOpenChange(false)
       form.reset()

@@ -28,6 +28,7 @@ export function FerieDeleteDialog({
 
       if (error) throw error
       await queryClient.invalidateQueries({ queryKey: ['ferie'] })
+      await queryClient.invalidateQueries({ queryKey: ['user-stats'] })
       toast.success('Ferie eliminate con successo')
       onOpenChange(false)
     } catch (error: any) {

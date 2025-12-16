@@ -28,6 +28,7 @@ export function PianificazioneDeleteDialog({
 
       if (error) throw error
       await queryClient.invalidateQueries({ queryKey: ['pianificazione'] })
+      await queryClient.invalidateQueries({ queryKey: ['user-stats'] })
       toast.success('Pianificazione eliminata (logicamente) con successo')
       onOpenChange(false)
     } catch (error: any) {
