@@ -78,19 +78,9 @@ export const sidebarData: SidebarData = {
           icon: MessagesSquare,
         },
         {
-          title: 'Users',
-          url: '/users',
-          icon: Users,
-        },
-        {
           title: 'Timesheet',
           url: '/timesheet',
           icon: Clock,
-        },
-        {
-          title: 'Commesse',
-          url: '/commesse',
-          icon: ScrollText,
         },
         {
           title: 'Pianificazione',
@@ -103,9 +93,19 @@ export const sidebarData: SidebarData = {
           icon: Calendar,
         },
         {
+          title: 'Commesse',
+          url: '/commesse',
+          icon: ScrollText,
+        },
+        {
           title: 'Aziende',
           url: '/companies',
           icon: Building2,
+        },
+        {
+          title: 'Users',
+          url: '/users',
+          icon: Users,
         },
 
       ],
