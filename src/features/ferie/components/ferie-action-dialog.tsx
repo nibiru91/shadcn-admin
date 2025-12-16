@@ -131,7 +131,7 @@ export function FerieActionDialog({
               tipologia: 'permesso',
               data_permesso: detail.data_riferimento || '',
               ore_permesso: detail.ore || 0,
-              fascia_oraria: detail.fascia_oraria || 'full_day',
+              fascia_oraria: detail.fascia_oraria || 'mattina',
               note_richiesta: request.note_richiesta || null,
             })
           }
@@ -356,7 +356,7 @@ export function FerieActionDialog({
               week,
               mese,
               anno,
-              fascia_oraria: data.fascia_oraria || 'full_day',
+              fascia_oraria: data.fascia_oraria || 'mattina',
             })
 
           if (detailsError) throw detailsError
@@ -389,7 +389,7 @@ export function FerieActionDialog({
               week,
               mese,
               anno,
-              fascia_oraria: data.fascia_oraria || 'full_day',
+              fascia_oraria: data.fascia_oraria || 'mattina',
             })
 
           if (detailsError) {
@@ -616,7 +616,7 @@ export function FerieActionDialog({
                     <FormLabel>Fascia oraria</FormLabel>
                     <Select
                       onValueChange={field.onChange}
-                      defaultValue={field.value || 'full_day'}
+                      defaultValue={field.value || 'mattina'}
                       disabled={isEdit}
                     >
                       <FormControl>
@@ -625,7 +625,6 @@ export function FerieActionDialog({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value='full_day'>Giornata intera</SelectItem>
                         <SelectItem value='mattina'>Mattina</SelectItem>
                         <SelectItem value='pomeriggio'>Pomeriggio</SelectItem>
                       </SelectContent>
