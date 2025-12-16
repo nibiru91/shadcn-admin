@@ -1,10 +1,13 @@
 'use client'
 
 import { Trash2 } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
+import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Riga } from '../data/wizard-schema'
 import { calcolaTotaleRiga } from '../utils/fattura-wizard-utils'
+import { CommessaCombobox } from './commessa-combobox'
 
 type RigaFatturaProps = {
   riga: Riga
@@ -12,6 +15,17 @@ type RigaFatturaProps = {
   onDelete: () => void
   onOpenTimesheet: () => void
   index: number
+}
+
+async function fetchCommessaTitle(id: number) {
+  const { data, error } = await supabase
+    .from('commesse')
+    .select('title')
+    .eq('id', id)
+    .single()
+
+  if (error) throw new Error(error.message)
+  return data?.title || null
 }
 
 export function RigaFattura({
@@ -23,6 +37,13 @@ export function RigaFattura({
 }: RigaFatturaProps) {
   const totaleRiga = calcolaTotaleRiga(riga)
   const isFromTimesheet = riga.timesheet_ids && riga.timesheet_ids.length > 0
+
+  // Carica il titolo della commessa se presente (per visualizzazione quando disabilitata)
+  const { data: commessaTitle } = useQuery({
+    queryKey: ['commessa-title', riga.id_commessa],
+    queryFn: () => fetchCommessaTitle(riga.id_commessa!),
+    enabled: !!riga.id_commessa,
+  })
 
   const updateField = <K extends keyof Riga>(field: K, value: Riga[K]) => {
     onRigaChange({ ...riga, [field]: value })
@@ -78,6 +99,23 @@ export function RigaFattura({
             placeholder='ore'
           />
         </div>
+      </div>
+      
+      {/* Riga dedicata per Commessa */}
+      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
+        <div className='md:col-span-2'>
+          <label className='text-sm font-medium mb-1 block'>Commessa</label>
+          <CommessaCombobox
+            value={riga.id_commessa}
+            onValueChange={(value) => updateField('id_commessa', value)}
+            placeholder='Seleziona commessa...'
+            disabled={isFromTimesheet}
+            displayTitle={isFromTimesheet ? commessaTitle : undefined}
+          />
+        </div>
+      </div>
+
+      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
         <div>
           <label className='text-sm font-medium mb-1 block'>Quantità</label>
           <Input
