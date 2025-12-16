@@ -1,6 +1,7 @@
 import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 import { type Row } from '@tanstack/react-table'
-import { Trash2, Pencil } from 'lucide-react'
+import { useNavigate } from '@tanstack/react-router'
+import { Trash2, Pencil, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -19,6 +20,8 @@ type DataTableRowActionsProps = {
 
 export function DataTableRowActions({ row }: DataTableRowActionsProps) {
   const { setOpen, setCurrentRow } = useCommesse()
+  const navigate = useNavigate({ from: '/_authenticated/commesse/' })
+  
   return (
     <>
       <DropdownMenu modal={false}>
@@ -46,6 +49,23 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
             Modifica
             <DropdownMenuShortcut>
               <Pencil size={16} />
+            </DropdownMenuShortcut>
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={(e) => {
+              e.stopPropagation()
+              e.preventDefault()
+              if (row.original.id) {
+                navigate({
+                  to: '/commesse/riepilogo',
+                  search: { commessaId: String(row.original.id) },
+                })
+              }
+            }}
+          >
+            Riepilogo
+            <DropdownMenuShortcut>
+              <FileText size={16} />
             </DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuSeparator />

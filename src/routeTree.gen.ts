@@ -40,6 +40,7 @@ import { Route as AuthenticatedSettingsAppearanceRouteImport } from './routes/_a
 import { Route as AuthenticatedSettingsAccountRouteImport } from './routes/_authenticated/settings/account'
 import { Route as AuthenticatedErrorsErrorRouteImport } from './routes/_authenticated/errors/$error'
 import { Route as AuthenticatedFattureNuovaIndexRouteImport } from './routes/_authenticated/fatture/nuova/index'
+import { Route as AuthenticatedCommesseRiepilogoIndexRouteImport } from './routes/_authenticated/commesse/riepilogo/index'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
@@ -209,6 +210,12 @@ const AuthenticatedFattureNuovaIndexRoute =
     path: '/fatture/nuova/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedCommesseRiepilogoIndexRoute =
+  AuthenticatedCommesseRiepilogoIndexRouteImport.update({
+    id: '/commesse/riepilogo/',
+    path: '/commesse/riepilogo/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRouteRouteWithChildren
@@ -240,6 +247,7 @@ export interface FileRoutesByFullPath {
   '/tasks': typeof AuthenticatedTasksIndexRoute
   '/timesheet': typeof AuthenticatedTimesheetIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/commesse/riepilogo': typeof AuthenticatedCommesseRiepilogoIndexRoute
   '/fatture/nuova': typeof AuthenticatedFattureNuovaIndexRoute
 }
 export interface FileRoutesByTo {
@@ -271,6 +279,7 @@ export interface FileRoutesByTo {
   '/tasks': typeof AuthenticatedTasksIndexRoute
   '/timesheet': typeof AuthenticatedTimesheetIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/commesse/riepilogo': typeof AuthenticatedCommesseRiepilogoIndexRoute
   '/fatture/nuova': typeof AuthenticatedFattureNuovaIndexRoute
 }
 export interface FileRoutesById {
@@ -305,6 +314,7 @@ export interface FileRoutesById {
   '/_authenticated/tasks/': typeof AuthenticatedTasksIndexRoute
   '/_authenticated/timesheet/': typeof AuthenticatedTimesheetIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
+  '/_authenticated/commesse/riepilogo/': typeof AuthenticatedCommesseRiepilogoIndexRoute
   '/_authenticated/fatture/nuova/': typeof AuthenticatedFattureNuovaIndexRoute
 }
 export interface FileRouteTypes {
@@ -339,6 +349,7 @@ export interface FileRouteTypes {
     | '/tasks'
     | '/timesheet'
     | '/users'
+    | '/commesse/riepilogo'
     | '/fatture/nuova'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -370,6 +381,7 @@ export interface FileRouteTypes {
     | '/tasks'
     | '/timesheet'
     | '/users'
+    | '/commesse/riepilogo'
     | '/fatture/nuova'
   id:
     | '__root__'
@@ -403,6 +415,7 @@ export interface FileRouteTypes {
     | '/_authenticated/tasks/'
     | '/_authenticated/timesheet/'
     | '/_authenticated/users/'
+    | '/_authenticated/commesse/riepilogo/'
     | '/_authenticated/fatture/nuova/'
   fileRoutesById: FileRoutesById
 }
@@ -639,6 +652,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFattureNuovaIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/commesse/riepilogo/': {
+      id: '/_authenticated/commesse/riepilogo/'
+      path: '/commesse/riepilogo'
+      fullPath: '/commesse/riepilogo'
+      preLoaderRoute: typeof AuthenticatedCommesseRiepilogoIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -680,6 +700,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedTasksIndexRoute: typeof AuthenticatedTasksIndexRoute
   AuthenticatedTimesheetIndexRoute: typeof AuthenticatedTimesheetIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
+  AuthenticatedCommesseRiepilogoIndexRoute: typeof AuthenticatedCommesseRiepilogoIndexRoute
   AuthenticatedFattureNuovaIndexRoute: typeof AuthenticatedFattureNuovaIndexRoute
 }
 
@@ -698,6 +719,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedTasksIndexRoute: AuthenticatedTasksIndexRoute,
   AuthenticatedTimesheetIndexRoute: AuthenticatedTimesheetIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
+  AuthenticatedCommesseRiepilogoIndexRoute:
+    AuthenticatedCommesseRiepilogoIndexRoute,
   AuthenticatedFattureNuovaIndexRoute: AuthenticatedFattureNuovaIndexRoute,
 }
 
