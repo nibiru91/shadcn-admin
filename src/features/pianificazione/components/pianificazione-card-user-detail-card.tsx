@@ -26,15 +26,15 @@ export function PianificazioneCardUserDetailCard({
   }
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-base font-medium">{userName}</CardTitle>
+    <Card className="hover:shadow-md transition-shadow py-2">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1.5 px-3 pt-2">
+        <CardTitle className="text-sm font-medium truncate pr-2">{userName}</CardTitle>
         {isLoading ? (
-          <Skeleton className="h-5 w-16" />
+          <Skeleton className="h-4 w-12 flex-shrink-0" />
         ) : stats ? (
           <span
             className={cn(
-              'text-sm font-semibold',
+              'text-xs font-semibold flex-shrink-0',
               getSaturationColor(stats.saturazione)
             )}
           >
@@ -42,47 +42,47 @@ export function PianificazioneCardUserDetailCard({
           </span>
         ) : null}
       </CardHeader>
-      <CardContent className="space-y-2">
+      <CardContent className="space-y-1 px-3 pb-2">
         {isLoading ? (
           <>
-            <div className="space-y-1">
-              <Skeleton className="h-4 w-32" />
-              <Skeleton className="h-4 w-24" />
+            <div className="flex justify-between items-center">
+              <Skeleton className="h-3 w-24" />
+              <Skeleton className="h-3 w-12" />
             </div>
-            <div className="space-y-1">
-              <Skeleton className="h-4 w-32" />
-              <Skeleton className="h-4 w-24" />
+            <div className="flex justify-between items-center">
+              <Skeleton className="h-3 w-20" />
+              <Skeleton className="h-3 w-12" />
             </div>
-            <div className="space-y-1">
-              <Skeleton className="h-4 w-32" />
-              <Skeleton className="h-4 w-24" />
+            <div className="flex justify-between items-center">
+              <Skeleton className="h-3 w-20" />
+              <Skeleton className="h-3 w-12" />
             </div>
           </>
         ) : stats ? (
           <>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">
-                Ore effettive disponibili
+              <span className="text-xs text-muted-foreground truncate pr-2">
+                Disponibili
               </span>
-              <span className="text-sm font-medium">
+              <span className="text-xs font-medium flex-shrink-0">
                 {formatNumber(stats.oreDisponibili)}h
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">
-                Ore Pianificate
+              <span className="text-xs text-muted-foreground truncate pr-2">
+                Pianificate
               </span>
-              <span className="text-sm font-medium">
+              <span className="text-xs font-medium flex-shrink-0">
                 {formatNumber(stats.orePianificate)}h
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">
-                Ore Rimanenti
+              <span className="text-xs text-muted-foreground truncate pr-2">
+                Rimanenti
               </span>
               <span
                 className={cn(
-                  'text-sm font-medium',
+                  'text-xs font-medium flex-shrink-0',
                   stats.oreRimanenti < 0
                     ? 'text-red-600 dark:text-red-400'
                     : ''
