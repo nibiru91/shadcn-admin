@@ -50,6 +50,10 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
             onClick={(e) => {
               e.stopPropagation()
               e.preventDefault()
+              setTimeout(() => {
+                setCurrentRow(row.original)
+                setOpen('delete')
+              }, 0)
               // Non implementato per ora
             }}
             className='text-red-500!'

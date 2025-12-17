@@ -134,3 +134,4 @@ export async function fetchCommessaDettagli(
   } as CommessaDettagli
 }
 
+

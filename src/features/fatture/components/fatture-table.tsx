@@ -228,7 +228,7 @@ export function FattureTable({ data, search, navigate }: DataTableProps) {
                   className='group/row cursor-pointer'
                   onClick={() => {
                     setCurrentRow(row.original)
-                    setOpen('view')
+                    //setOpen('view')
                   }}
                 >
                   {row.getVisibleCells().map((cell) => (

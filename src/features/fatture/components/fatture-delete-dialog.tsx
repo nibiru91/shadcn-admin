@@ -2,6 +2,9 @@
 
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { type Fattura } from '../data/schema'
+import { supabase } from '@/lib/supabase'
+import { useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 
 interface FattureDeleteDialogProps {
   open: boolean
@@ -15,15 +18,26 @@ export function FattureDeleteDialog({
   currentRow,
 }: FattureDeleteDialogProps) {
   // Placeholder - non implementato per ora
+  const queryClient = useQueryClient()
   return (
     <ConfirmDialog
       open={open}
       onOpenChange={onOpenChange}
       handleConfirm={async () => {
-        // Non implementato
+        // Elimina la fattura dal database supabase
+        const { error } = await supabase
+        .rpc('delete_invoice_and_reset_timesheets', {
+          invoice_id: currentRow.id // ID della fattura da eliminare
+        });
+        if (error) throw error
+        await queryClient.invalidateQueries({ queryKey: ['fatture'] })
+        await queryClient.invalidateQueries({ queryKey: ['user-stats'] })
+        toast.success('Fattura eliminata con successo')
+        onOpenChange(false)
+        return 'Fattura eliminata con successo'
       }}
       title="Elimina Fattura"
-      desc={`Eliminazione non implementata.`}
+      desc={`Sei sicuro di voler eliminare la fattura ${currentRow.numero}? Questa azione non può essere annullata.`}
       confirmText="Elimina"
       destructive
     />
