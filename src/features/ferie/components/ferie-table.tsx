@@ -73,11 +73,29 @@ export function FerieTable({ data, search, navigate }: DataTableProps) {
     pagination: { defaultPage: 1, defaultPageSize: 10 },
     globalFilter: { enabled: false },
     columnFilters: [
-      { columnId: 'user_id', searchKey: 'user_id', type: 'array' },
+      { 
+        columnId: 'user_id', 
+        searchKey: 'user_id', 
+        type: 'array',
+        serialize: (val) => Array.isArray(val) ? val.map(String) : val,
+        deserialize: (val) => Array.isArray(val) ? val.map(String) : val
+      },
       { columnId: 'tipologia', searchKey: 'tipologia', type: 'array' },
       { columnId: 'stato', searchKey: 'stato', type: 'array' },
-      { columnId: 'anno', searchKey: 'anno', type: 'array' },
-      { columnId: 'mese', searchKey: 'mese', type: 'array' },
+      { 
+        columnId: 'anno', 
+        searchKey: 'anno', 
+        type: 'array',
+        serialize: (val) => Array.isArray(val) ? val.map(String) : val,
+        deserialize: (val) => Array.isArray(val) ? val.map(String) : val
+      },
+      { 
+        columnId: 'mese', 
+        searchKey: 'mese', 
+        type: 'array',
+        serialize: (val) => Array.isArray(val) ? val.map(String) : val,
+        deserialize: (val) => Array.isArray(val) ? val.map(String) : val
+      },
     ],
   })
 

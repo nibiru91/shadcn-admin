@@ -92,17 +92,17 @@ export const sidebarData: SidebarData = {
           items: [
             {
               title: 'Timesheet',
-              url: '/timesheet',
+              url: `/timesheet?anno=${new Date().getFullYear()}`,
               icon: Clock,
             },
             {
               title: 'Pianificazione',
-              url: '/pianificazione',
+              url: `/pianificazione?anno=${new Date().getFullYear()}`,
               icon: Boxes,
             },
             {
               title: 'Ferie',
-              url: '/ferie',
+              url: `/ferie?anno=${new Date().getFullYear()}`,
               icon: Calendar,
             },
           ],

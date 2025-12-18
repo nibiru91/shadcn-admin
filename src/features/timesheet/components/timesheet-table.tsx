@@ -89,11 +89,41 @@ export function TimesheetTable({ data, search, navigate }: DataTableProps) {
     globalFilter: { enabled: false },
     columnFilters: [
       { columnId: 'detail_search', searchKey: 'detail', type: 'string' },
-      { columnId: 'user_id', searchKey: 'user_id', type: 'array' },
-      { columnId: 'commessa', searchKey: 'commessa', type: 'array' },
-      { columnId: 'week', searchKey: 'week', type: 'array' },
-      { columnId: 'anno', searchKey: 'anno', type: 'array' },
-      { columnId: 'mese', searchKey: 'mese', type: 'array' },
+      { 
+        columnId: 'user_id', 
+        searchKey: 'user_id', 
+        type: 'array',
+        serialize: (val) => Array.isArray(val) ? val.map(String) : val,
+        deserialize: (val) => Array.isArray(val) ? val.map(String) : val
+      },
+      { 
+        columnId: 'commessa', 
+        searchKey: 'commessa', 
+        type: 'array',
+        serialize: (val) => Array.isArray(val) ? val.map(String) : val,
+        deserialize: (val) => Array.isArray(val) ? val.map(String) : val
+      },
+      { 
+        columnId: 'week', 
+        searchKey: 'week', 
+        type: 'array',
+        serialize: (val) => Array.isArray(val) ? val.map(String) : val,
+        deserialize: (val) => Array.isArray(val) ? val.map(String) : val
+      },
+      { 
+        columnId: 'anno', 
+        searchKey: 'anno', 
+        type: 'array',
+        serialize: (val) => Array.isArray(val) ? val.map(String) : val,
+        deserialize: (val) => Array.isArray(val) ? val.map(String) : val
+      },
+      { 
+        columnId: 'mese', 
+        searchKey: 'mese', 
+        type: 'array',
+        serialize: (val) => Array.isArray(val) ? val.map(String) : val,
+        deserialize: (val) => Array.isArray(val) ? val.map(String) : val
+      },
     ],
   })
 

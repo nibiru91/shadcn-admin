@@ -54,7 +54,6 @@ export function RiepilogoStatsCard({
               target='_blank'
               rel='noopener noreferrer'
               className='text-muted-foreground hover:text-primary transition-colors inline-flex'
-              tooltip={link}
             >
               <Link size={18} />
             </a>
