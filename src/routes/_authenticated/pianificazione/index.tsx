@@ -7,13 +7,13 @@ const pianificazioneSearchSchema = z.object({
   pageSize: z.number().optional().catch(10),
   // Filtro testo per detail
   detail: z.string().optional().catch(''),
-  // Filtri a selezione multipla
-  user_id: z.array(z.number()).optional().catch([]),
-  commessa: z.array(z.number()).optional().catch([]),
-  week: z.array(z.number()).optional().catch([]),
-  anno: z.array(z.number()).optional().catch([]),
-  mese: z.array(z.number()).optional().catch([]),
-  is_delayable: z.array(z.union([z.boolean(), z.string()])).optional().catch([]),
+  // Filtri a selezione multipla - migliorata la gestione per accettare singoli valori o array
+  user_id: z.preprocess((val) => (Array.isArray(val) ? val : val !== undefined ? [val] : []), z.array(z.coerce.number())).optional().catch([]),
+  commessa: z.preprocess((val) => (Array.isArray(val) ? val : val !== undefined ? [val] : []), z.array(z.coerce.number())).optional().catch([]),
+  week: z.preprocess((val) => (Array.isArray(val) ? val : val !== undefined ? [val] : []), z.array(z.coerce.number())).optional().catch([]),
+  anno: z.preprocess((val) => (Array.isArray(val) ? val : val !== undefined ? [val] : []), z.array(z.coerce.number())).optional().catch([]),
+  mese: z.preprocess((val) => (Array.isArray(val) ? val : val !== undefined ? [val] : []), z.array(z.coerce.number())).optional().catch([]),
+  is_delayable: z.preprocess((val) => (Array.isArray(val) ? val : val !== undefined ? [val] : []), z.array(z.union([z.boolean(), z.string()]))).optional().catch([]),
 })
 
 export const Route = createFileRoute('/_authenticated/pianificazione/')({

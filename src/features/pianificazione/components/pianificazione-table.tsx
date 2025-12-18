@@ -91,24 +91,54 @@ export function PianificazioneTable({ data, search, navigate }: DataTableProps) 
     globalFilter: { enabled: false },
     columnFilters: [
       { columnId: 'detail_search', searchKey: 'detail', type: 'string' },
-      { columnId: 'user_id', searchKey: 'user_id', type: 'array' },
-      { columnId: 'commessa', searchKey: 'commessa', type: 'array' },
-      { columnId: 'week', searchKey: 'week', type: 'array' },
-      { columnId: 'anno', searchKey: 'anno', type: 'array' },
-      { columnId: 'mese', searchKey: 'mese', type: 'array' },
+      { 
+        columnId: 'user_id', 
+        searchKey: 'user_id', 
+        type: 'array',
+        serialize: (val) => Array.isArray(val) ? val.map(String) : val,
+        deserialize: (val) => Array.isArray(val) ? val.map(String) : val
+      },
+      { 
+        columnId: 'commessa', 
+        searchKey: 'commessa', 
+        type: 'array',
+        serialize: (val) => Array.isArray(val) ? val.map(String) : val,
+        deserialize: (val) => Array.isArray(val) ? val.map(String) : val
+      },
+      { 
+        columnId: 'week', 
+        searchKey: 'week', 
+        type: 'array',
+        serialize: (val) => Array.isArray(val) ? val.map(String) : val,
+        deserialize: (val) => Array.isArray(val) ? val.map(String) : val
+      },
+      { 
+        columnId: 'anno', 
+        searchKey: 'anno', 
+        type: 'array',
+        serialize: (val) => Array.isArray(val) ? val.map(String) : val,
+        deserialize: (val) => Array.isArray(val) ? val.map(String) : val
+      },
+      { 
+        columnId: 'mese', 
+        searchKey: 'mese', 
+        type: 'array',
+        serialize: (val) => Array.isArray(val) ? val.map(String) : val,
+        deserialize: (val) => Array.isArray(val) ? val.map(String) : val
+      },
       { 
         columnId: 'is_delayable', 
         searchKey: 'is_delayable', 
         type: 'array',
         serialize: (value) => {
           if (Array.isArray(value)) {
-            return value.map((v) => (v === true || v === 'true') ? true : false)
+            return value.map((v) => (v === true || v === 'true') ? 'true' : 'false')
           }
           return value
         },
         deserialize: (value) => {
           if (Array.isArray(value)) {
-            return value.map((v) => (v === 'true' || v === true) ? true : (v === 'false' || v === false) ? false : v)
+            return value.map((v) => (v === 'true' || v === true) ? 'true' : 'false')
           }
           return value
         },

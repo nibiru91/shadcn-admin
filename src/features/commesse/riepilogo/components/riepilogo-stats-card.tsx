@@ -46,19 +46,20 @@ export function RiepilogoStatsCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className='text-base'>{title}
-        {/*<Link href={link}>{link}</Link>*/}
-        {link && <a 
-        href={link} 
-        target="_blank" 
-        rel="noopener noreferrer"
-        class="text-muted-foreground hover:text-primary transition-colors"
-        >
-        <Link size={18} />
-        </a>}
-
-      </CardTitle>
-
+        <CardTitle className='text-base flex items-center justify-between gap-2'>
+          <span>{title}</span>
+          {link && (
+            <a
+              href={link}
+              target='_blank'
+              rel='noopener noreferrer'
+              className='text-muted-foreground hover:text-primary transition-colors inline-flex'
+              tooltip={link}
+            >
+              <Link size={18} />
+            </a>
+          )}
+        </CardTitle>
       </CardHeader>
       <CardContent className='space-y-3'>
         <div>
