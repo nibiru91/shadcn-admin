@@ -37,7 +37,7 @@ type DataTableProps = {
   navigate: NavigateFn
 }
 
-async function fetchCompanies() {
+async function fetchAziende() {
   const { data, error } = await supabase
     .from('companies')
     .select('id, ragione_sociale')
@@ -53,16 +53,19 @@ export function CommesseTable({ data, search, navigate }: DataTableProps) {
   const routerNavigate = useNavigate()
   // Local UI-only states
   const [rowSelection, setRowSelection] = useState({})
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
+    ore_previste: false,
+    categoria: false,
+    tipologia: false,
+  })
   const [sorting, setSorting] = useState<SortingState>([])
 
   // Carica aziende per il filtro cliente_diretto
-  const { data: companies = [] } = useQuery({
+  const { data: aziende = [] } = useQuery({
     queryKey: ['companies-for-filter'],
-    queryFn: fetchCompanies,
+    queryFn: fetchAziende,
   })
 
-  // Usa gli enums dal contesto globale
   const { tipologia: tipologiaValues, stato: statoValues, area: areaValues, categoria: categoriaValues } = useEnums()
 
   // Synced with URL states
@@ -122,7 +125,7 @@ export function CommesseTable({ data, search, navigate }: DataTableProps) {
   const areaColumn = table.getColumn('area')
   const categoriaColumn = table.getColumn('categoria')
 
-  const clienteOptions = companies
+  const clienteOptions = aziende
     .map((c) => ({ label: c.ragione_sociale, value: String(c.id) }))
     .sort((a, b) => a.label.localeCompare(b.label))
 

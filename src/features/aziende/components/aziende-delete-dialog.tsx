@@ -4,19 +4,19 @@ import { ConfirmDialog } from '@/components/confirm-dialog'
 import { toast } from 'sonner'
 import { useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
-import { Company } from '../data/schema'
+import { Azienda } from '../data/schema'
 
-interface CompaniesDeleteDialogProps {
+interface AziendeDeleteDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  currentRow: Company
+  currentRow: Azienda
 }
 
-export function CompaniesDeleteDialog({
+export function AziendeDeleteDialog({
   open,
   onOpenChange,
   currentRow,
-}: CompaniesDeleteDialogProps) {
+}: AziendeDeleteDialogProps) {
   const queryClient = useQueryClient()
 
   const handleDelete = async () => {
@@ -28,7 +28,7 @@ export function CompaniesDeleteDialog({
 
       if (error) throw error
       toast.success('Azienda eliminata (logicamente) con successo')
-      await queryClient.invalidateQueries({ queryKey: ['companies'] })
+      await queryClient.invalidateQueries({ queryKey: ['aziende'] })
       onOpenChange(false)
     } catch (error: any) {
       toast.error(error.message)

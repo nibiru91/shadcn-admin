@@ -100,9 +100,9 @@ export const timesheetColumns: ColumnDef<Timesheet>[] = [
   {
     accessorKey: 'ore_lavorate',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Ore Lavorate' />
+      <DataTableColumnHeader column={column} title='Lavorate' />
     ),
-    meta: { label: 'Ore Lavorate' },
+    meta: { label: 'Lavorate' },
     cell: ({ row }) => {
       const value = row.getValue<number>('ore_lavorate')
       return value !== null && value !== undefined ? value.toFixed(2) : '-'
@@ -111,9 +111,9 @@ export const timesheetColumns: ColumnDef<Timesheet>[] = [
   {
     accessorKey: 'ore_billable',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Ore Billable' />
+      <DataTableColumnHeader column={column} title='Billable' />
     ),
-    meta: { label: 'Ore Billable' },
+    meta: { label: 'Billable' },
     cell: ({ row }) => {
       const value = row.getValue<number | null>('ore_billable')
       return value !== null && value !== undefined ? value.toFixed(2) : '-'
@@ -204,9 +204,9 @@ export const timesheetColumns: ColumnDef<Timesheet>[] = [
   {
     accessorKey: 'is_billed',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Fatturato' />
+      <DataTableColumnHeader column={column} title='Fattura' />
     ),
-    meta: { label: 'Fatturato' },
+    meta: { label: 'Fattura' },
     cell: ({ row }) => {
       const value = row.getValue<boolean>('is_billed')
       return (
@@ -219,9 +219,9 @@ export const timesheetColumns: ColumnDef<Timesheet>[] = [
   {
     accessorKey: 'tariffa_billed',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Tariffa Fatturata' />
+      <DataTableColumnHeader column={column} title='Tariffa' />
     ),
-    meta: { label: 'Tariffa Fatturata' },
+    meta: { label: 'Tariffa' },
     cell: ({ row }) => {
       const value = row.getValue<number | null>('tariffa_billed')
       return value !== null && value !== undefined ? `€ ${value.toFixed(2)}` : '-'
@@ -230,9 +230,9 @@ export const timesheetColumns: ColumnDef<Timesheet>[] = [
   {
     accessorKey: 'fattura',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Fattura' />
+      <DataTableColumnHeader column={column} title='Ft Nr.' />
     ),
-    meta: { label: 'Fattura' },
+    meta: { label: 'Ft Nr.' },
     cell: ({ row }) => {
       const value = row.getValue<string | null>('fattura')
       if (!value) return <span className='text-muted-foreground text-xs'>-</span>

@@ -1,10 +1,10 @@
 import { faker } from '@faker-js/faker'
-import { Company } from './schema'
+import { Azienda } from './schema'
 
 // Set a fixed seed for consistent data generation
 faker.seed(67890)
 
-export const companies: Company[] = Array.from({ length: 50 }, (_, idx) => {
+export const aziende: Azienda[] = Array.from({ length: 50 }, (_, idx) => {
   const companyName = faker.company.name()
   const isCustomer = faker.datatype.boolean()
   const isSupplier = faker.datatype.boolean()

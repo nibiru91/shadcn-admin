@@ -118,7 +118,7 @@ export const sidebarData: SidebarData = {
             },
             {
               title: 'Aziende',
-              url: '/companies',
+              url: '/aziende',
               icon: Building2,
             },
           ],

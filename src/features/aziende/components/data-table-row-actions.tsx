@@ -10,15 +10,15 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { type Company } from '../data/schema'
-import { useCompanies } from './companies-provider'
+import { type Azienda } from '../data/schema'
+import { useAziende } from './aziende-provider'
 
 type DataTableRowActionsProps = {
-  row: Row<Company>
+  row: Row<Azienda>
 }
 
 export function DataTableRowActions({ row }: DataTableRowActionsProps) {
-  const { setOpen, setCurrentRow } = useCompanies()
+  const { setOpen, setCurrentRow } = useAziende()
   return (
     <>
       <DropdownMenu modal={false}>

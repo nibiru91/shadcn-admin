@@ -2,10 +2,10 @@ import { ColumnDef } from '@tanstack/react-table'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
 import { DataTableColumnHeader } from '@/components/data-table/column-header'
-import { Company } from '../data/schema'
+import { Azienda } from '../data/schema'
 import { DataTableRowActions } from './data-table-row-actions'
 
-export const companiesColumns: ColumnDef<Company>[] = [
+export const aziendeColumns: ColumnDef<Azienda>[] = [
 	{
 		id: 'select',
 		header: ({ table }) => (

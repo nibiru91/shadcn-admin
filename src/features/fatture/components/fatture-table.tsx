@@ -35,7 +35,7 @@ type DataTableProps = {
   navigate: NavigateFn
 }
 
-async function fetchCompanies() {
+async function fetchAziende() {
   const { data, error } = await supabase
     .from('companies')
     .select('id, ragione_sociale')
@@ -53,10 +53,10 @@ export function FattureTable({ data, search, navigate }: DataTableProps) {
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [sorting, setSorting] = useState<SortingState>([])
 
-  // Carica companies per il filtro cliente
-  const { data: companies = [] } = useQuery({
-    queryKey: ['companies-for-fatture-filter'],
-    queryFn: fetchCompanies,
+  // Carica aziende per il filtro cliente
+  const { data: aziende = [] } = useQuery({
+    queryKey: ['aziende-for-fatture-filter'],
+    queryFn: fetchAziende,
   })
 
   // Synced with URL states
@@ -135,7 +135,7 @@ export function FattureTable({ data, search, navigate }: DataTableProps) {
           const clienteId = typeof value === 'object' && value !== null
             ? (value as any)?.id ?? value
             : value
-          const cliente = companies.find((c) => c.id === clienteId)
+          const cliente = aziende.find((c) => c.id === clienteId)
           return {
             label: cliente ? cliente.ragione_sociale : `Cliente #${clienteId}`,
             value: String(clienteId),
@@ -145,7 +145,7 @@ export function FattureTable({ data, search, navigate }: DataTableProps) {
           index === self.findIndex((o) => o.value === option.value)
         )
         .sort((a, b) => a.label.localeCompare(b.label))
-    : companies.map((c) => ({
+    : aziende.map((c) => ({
         label: c.ragione_sociale,
         value: String(c.id),
       }))

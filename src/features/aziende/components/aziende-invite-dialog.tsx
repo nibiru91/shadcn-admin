@@ -24,7 +24,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { SelectDropdown } from '@/components/select-dropdown'
-import { companyTags } from '../data/data'
+import { aziendaTags } from '../data/data'
 
 const formSchema = z.object({
   email: z
@@ -38,23 +38,23 @@ const formSchema = z.object({
   desc: z.string().optional(),
 })
 
-type CompanyInviteForm = z.infer<typeof formSchema>
+type AziendaInviteForm = z.infer<typeof formSchema>
 
-type CompanyInviteDialogProps = {
+type AziendaInviteDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
-export function CompaniesInviteDialog({
+export function AziendeInviteDialog({
   open,
   onOpenChange,
-}: CompanyInviteDialogProps) {
-  const form = useForm<CompanyInviteForm>({
+}: AziendaInviteDialogProps) {
+  const form = useForm<AziendaInviteForm>({
     resolver: zodResolver(formSchema),
     defaultValues: { email: '', tag: '', desc: '' },
   })
 
-  const onSubmit = (values: CompanyInviteForm) => {
+  const onSubmit = (values: AziendaInviteForm) => {
     form.reset()
     showSubmittedData(values)
     onOpenChange(false)
@@ -111,7 +111,7 @@ export function CompaniesInviteDialog({
                     defaultValue={field.value}
                     onValueChange={field.onChange}
                     placeholder='Seleziona tipologia'
-                    items={companyTags.map(({ label, value }) => ({
+                    items={aziendaTags.map(({ label, value }) => ({
                       label,
                       value,
                     }))}

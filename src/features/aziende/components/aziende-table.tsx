@@ -22,26 +22,27 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { DataTablePagination, DataTableToolbar } from '@/components/data-table'
-import { type Company } from '../data/schema'
+import { type Azienda } from '../data/schema'
 import { DataTableBulkActions } from './data-table-bulk-actions'
-import { companiesColumns as columns } from './companies-columns'
-import { useCompanies } from './companies-provider'
+import { aziendeColumns as columns } from './aziende-columns'
+import { useAziende } from './aziende-provider'
 
 type DataTableProps = {
-  data: Company[]
+  data: Azienda[]
   search: Record<string, unknown>
   navigate: NavigateFn
 }
 
-export function CompaniesTable({ data, search, navigate }: DataTableProps) {
+export function AziendeTable({ data, search, navigate }: DataTableProps) {
   // Local UI-only states
   const [rowSelection, setRowSelection] = useState({})
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
     is_customer: false,
     is_supplier: false,
+    province: false,
   })
   const [sorting, setSorting] = useState<SortingState>([])
-  const { setOpen, setCurrentRow } = useCompanies()
+  const { setOpen, setCurrentRow } = useAziende()
 
   // Local state management for table (uncomment to use local-only state, not synced with URL)
   // const [columnFilters, onColumnFiltersChange] = useState<ColumnFiltersState>([])

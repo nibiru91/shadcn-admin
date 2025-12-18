@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 
-type CompanyMultiDeleteDialogProps<TData> = {
+type AziendaMultiDeleteDialogProps<TData> = {
   open: boolean
   onOpenChange: (open: boolean) => void
   table: Table<TData>
@@ -19,11 +19,11 @@ type CompanyMultiDeleteDialogProps<TData> = {
 
 const CONFIRM_WORD = 'ELIMINA'
 
-export function CompaniesMultiDeleteDialog<TData>({
+export function AziendeMultiDeleteDialog<TData>({
   open,
   onOpenChange,
   table,
-}: CompanyMultiDeleteDialogProps<TData>) {
+}: AziendaMultiDeleteDialogProps<TData>) {
   const [value, setValue] = useState('')
   const queryClient = useQueryClient()
 
@@ -56,7 +56,7 @@ export function CompaniesMultiDeleteDialog<TData>({
     toast.promise(promise, {
       loading: 'Eliminazione aziende...',
       success: async () => {
-        await queryClient.invalidateQueries({ queryKey: ['companies'] })
+        await queryClient.invalidateQueries({ queryKey: ['aziende'] })
         table.resetRowSelection()
         onOpenChange(false)
         return `Eliminate ${ids.length} aziend${ids.length === 1 ? 'a' : 'e'}`

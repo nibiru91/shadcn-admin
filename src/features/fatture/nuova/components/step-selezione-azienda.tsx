@@ -21,14 +21,14 @@ import {
 } from '@/components/ui/popover'
 import { toast } from 'sonner'
 
-type Company = {
+type Azienda = {
   id: number
   ragione_sociale: string
   is_customer: boolean
   is_supplier: boolean
 }
 
-async function fetchCompanies(tipoFattura: 'emessa' | 'ricevuta' | undefined) {
+async function fetchAziende(tipoFattura: 'emessa' | 'ricevuta' | undefined) {
   if (!tipoFattura) return []
 
   let query = supabase
@@ -47,7 +47,7 @@ async function fetchCompanies(tipoFattura: 'emessa' | 'ricevuta' | undefined) {
   const { data, error } = await query.order('ragione_sociale', { ascending: true })
 
   if (error) throw new Error(error.message)
-  return (data || []) as Company[]
+  return (data || []) as Azienda[]
 }
 
 type StepSelezioneAziendaProps = {
@@ -67,13 +67,13 @@ export function StepSelezioneAzienda({
 }: StepSelezioneAziendaProps) {
   const [open, setOpen] = React.useState(false)
 
-  const { data: companies = [], isLoading } = useQuery({
-    queryKey: ['companies-for-fattura', tipoFattura],
-    queryFn: () => fetchCompanies(tipoFattura),
+  const { data: aziende = [], isLoading } = useQuery({
+    queryKey: ['aziende-for-fattura', tipoFattura],
+    queryFn: () => fetchAziende(tipoFattura),
     enabled: !!tipoFattura,
   })
 
-  const selectedCompany = companies.find((c) => c.id === idCliente)
+  const selectedAzienda = aziende.find((c) => c.id === idCliente)
 
   const handleConferma = () => {
     if (!tipoFattura) {
@@ -110,7 +110,7 @@ export function StepSelezioneAzienda({
                 className='w-full justify-between'
                 disabled={!tipoFattura || confermato}
               >
-                {selectedCompany ? selectedCompany.ragione_sociale : 'Seleziona azienda...'}
+                {selectedAzienda ? selectedAzienda.ragione_sociale : 'Seleziona azienda...'}
                 <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
               </Button>
             </PopoverTrigger>
@@ -122,22 +122,22 @@ export function StepSelezioneAzienda({
                     {isLoading ? 'Caricamento...' : 'Nessuna azienda trovata.'}
                   </CommandEmpty>
                   <CommandGroup>
-                    {companies.map((company) => (
+                    {aziende.map((azienda) => (
                       <CommandItem
-                        key={company.id}
-                        value={company.ragione_sociale}
+                        key={azienda.id}
+                        value={azienda.ragione_sociale}
                         onSelect={() => {
-                          onIdClienteChange(company.id)
+                          onIdClienteChange(azienda.id)
                           setOpen(false)
                         }}
                       >
                         <Check
                           className={cn(
                             'mr-2 h-4 w-4',
-                            idCliente === company.id ? 'opacity-100' : 'opacity-0'
+                            idCliente === azienda.id ? 'opacity-100' : 'opacity-0'
                           )}
                         />
-                        {company.ragione_sociale}
+                        {azienda.ragione_sociale}
                       </CommandItem>
                     ))}
                   </CommandGroup>
@@ -152,7 +152,7 @@ export function StepSelezioneAzienda({
       </div>
       {confermato && (
         <p className='text-sm text-muted-foreground'>
-          ✓ Azienda confermata: {selectedCompany?.ragione_sociale}
+          ✓ Azienda confermata: {selectedAzienda?.ragione_sociale}
         </p>
       )}
     </div>

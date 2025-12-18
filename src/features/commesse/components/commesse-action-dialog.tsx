@@ -38,7 +38,7 @@ import {
 } from '@/components/ui/select'
 import { DatePicker } from '@/components/date-picker'
 import { commessaSchema, Commessa } from '../data/schema'
-import { CompanyCombobox } from './company-combobox'
+import { AziendaCombobox } from './azienda-combobox'
 
 interface CommesseActionDialogProps {
   open: boolean
@@ -282,7 +282,7 @@ export function CommesseActionDialog({
                   <FormItem>
                     <FormLabel>Cliente Diretto</FormLabel>
                     <FormControl>
-                      <CompanyCombobox
+                      <AziendaCombobox
                         value={field.value}
                         onValueChange={field.onChange}
                         placeholder='Seleziona cliente diretto...'
@@ -299,7 +299,7 @@ export function CommesseActionDialog({
                   <FormItem>
                     <FormLabel>Cliente Fatturazione</FormLabel>
                     <FormControl>
-                      <CompanyCombobox
+                      <AziendaCombobox
                         value={field.value}
                         onValueChange={field.onChange}
                         placeholder='Seleziona cliente fatturazione...'

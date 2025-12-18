@@ -27,24 +27,24 @@ import {
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
-import { companySchema, Company } from '../data/schema'
+import { aziendaSchema, Azienda } from '../data/schema'
 
-interface CompaniesActionDialogProps {
+interface AziendeActionDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  currentRow: Company | null
+  currentRow: Azienda | null
 }
 
-export function CompaniesActionDialog({
+export function AziendeActionDialog({
   open,
   onOpenChange,
   currentRow,
-}: CompaniesActionDialogProps) {
+}: AziendeActionDialogProps) {
   const isEdit = !!currentRow
   const queryClient = useQueryClient()
 
-  const form = useForm<Company>({
-    resolver: zodResolver(companySchema),
+  const form = useForm<Azienda>({
+    resolver: zodResolver(aziendaSchema),
     defaultValues: currentRow || {
       ragione_sociale: '',
       description: '',
@@ -61,7 +61,7 @@ export function CompaniesActionDialog({
     },
   })
 
-  async function onSubmit(data: Company) {
+  async function onSubmit(data: Azienda) {
     try {
       if (isEdit) {
         const { error } = await supabase
@@ -75,7 +75,7 @@ export function CompaniesActionDialog({
         if (error) throw error
         toast.success('Azienda creata con successo')
       }
-      await queryClient.invalidateQueries({ queryKey: ['companies'] })
+      await queryClient.invalidateQueries({ queryKey: ['aziende'] })
       onOpenChange(false)
       form.reset()
     } catch (error: any) {

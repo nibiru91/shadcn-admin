@@ -149,17 +149,6 @@ export const commesseColumns: ColumnDef<Commessa>[] = [
 		},
 	},
 	{
-		accessorKey: 'ore_residue',
-		header: ({ column }) => (
-			<DataTableColumnHeader column={column} title='Ore Residue' />
-		),
-		meta: { label: 'Ore Residue' },
-		cell: ({ row }) => {
-			const value = row.getValue<number | null>('ore_residue')
-			return value !== null && value !== undefined ? value.toFixed(1) : '-'
-		},
-	},
-	{
 		id: 'actions',
 		cell: ({ row }) => <DataTableRowActions row={row} />,
 		enableSorting: false,

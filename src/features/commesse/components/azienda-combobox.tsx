@@ -20,12 +20,12 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 
-type Company = {
+type Azienda = {
   id: number
   ragione_sociale: string
 }
 
-async function fetchCompanies() {
+async function fetchAziende() {
   const { data, error } = await supabase
     .from('companies')
     .select('id, ragione_sociale')
@@ -33,28 +33,28 @@ async function fetchCompanies() {
     .order('ragione_sociale', { ascending: true })
 
   if (error) throw new Error(error.message)
-  return (data || []) as Company[]
+  return (data || []) as Azienda[]
 }
 
-interface CompanyComboboxProps {
+interface AziendaComboboxProps {
   value?: number | null
   onValueChange: (value: number | null) => void
   placeholder?: string
 }
 
-export function CompanyCombobox({
+export function AziendaCombobox({
   value,
   onValueChange,
   placeholder = 'Seleziona azienda...',
-}: CompanyComboboxProps) {
+}: AziendaComboboxProps) {
   const [open, setOpen] = React.useState(false)
 
-  const { data: companies = [], isLoading } = useQuery({
-    queryKey: ['companies-for-combobox'],
-    queryFn: fetchCompanies,
+  const { data: aziende = [], isLoading } = useQuery({
+    queryKey: ['aziende-for-combobox'],
+    queryFn: fetchAziende,
   })
 
-  const selectedCompany = companies.find((c) => c.id === value)
+  const selectedAzienda = aziende.find((c) => c.id === value)
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -65,7 +65,7 @@ export function CompanyCombobox({
           aria-expanded={open}
           className='w-full justify-between'
         >
-          {selectedCompany ? selectedCompany.ragione_sociale : placeholder}
+          {selectedAzienda ? selectedAzienda.ragione_sociale : placeholder}
           <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
         </Button>
       </PopoverTrigger>
@@ -91,22 +91,22 @@ export function CompanyCombobox({
                 />
                 Nessuna
               </CommandItem>
-              {companies.map((company) => (
+              {aziende.map((azienda) => (
                 <CommandItem
-                  key={company.id}
-                  value={company.ragione_sociale}
+                  key={azienda.id}
+                  value={azienda.ragione_sociale}
                   onSelect={() => {
-                    onValueChange(company.id)
+                    onValueChange(azienda.id)
                     setOpen(false)
                   }}
                 >
                   <Check
                     className={cn(
                       'mr-2 h-4 w-4',
-                      value === company.id ? 'opacity-100' : 'opacity-0'
+                      value === azienda.id ? 'opacity-100' : 'opacity-0'
                     )}
                   />
-                  {company.ragione_sociale}
+                  {azienda.ragione_sociale}
                 </CommandItem>
               ))}
             </CommandGroup>

@@ -7,17 +7,17 @@ import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { ConfigDrawer } from '@/components/config-drawer'
-import { CompaniesProvider } from './components/companies-provider'
-import { CompaniesDialogs } from './components/companies-dialogs'
-import { CompaniesTable } from './components/companies-table'
-import { companiesColumns } from './components/companies-columns'
-import { CompaniesPrimaryButtons } from './components/companies-primary-buttons'
+import { AziendeProvider } from './components/aziende-provider'
+import { AziendeDialogs } from './components/aziende-dialogs'
+import { AziendeTable } from './components/aziende-table'
+import { aziendeColumns } from './components/aziende-columns'
+import { AziendePrimaryButtons } from './components/aziende-primary-buttons'
 
-const route = getRouteApi('/_authenticated/companies/')
+const route = getRouteApi('/_authenticated/aziende/')
 
-async function fetchCompanies() {
+async function fetchAziende() {
   const { data, error } = await supabase
-    .from('companies')
+    .from('companies') // Il nome della tabella nel DB rimane 'companies'
     .select('*')
     .eq('is_active', true) // Mostriamo solo le attive
     .order('created_at', { ascending: false })
@@ -26,13 +26,13 @@ async function fetchCompanies() {
   return data
 }
 
-function CompaniesContent() {
+function AziendeContent() {
   const search = route.useSearch()
   const navigate = route.useNavigate()
   
-  const { data: companies, isLoading, isError, error } = useQuery({
-    queryKey: ['companies'],
-    queryFn: fetchCompanies,
+  const { data: aziende, isLoading, isError, error } = useQuery({
+    queryKey: ['aziende'],
+    queryFn: fetchAziende,
   })
 
   if (isLoading) return <div className="p-8">Caricamento aziende...</div>
@@ -57,25 +57,25 @@ function CompaniesContent() {
               Gestisci clienti e fornitori.
             </p>
           </div>
-          <CompaniesPrimaryButtons />
+          <AziendePrimaryButtons />
         </div>
-        <CompaniesTable 
-          columns={companiesColumns} 
-          data={companies || []} 
+        <AziendeTable 
+          columns={aziendeColumns} 
+          data={aziende || []} 
           search={search}
           navigate={navigate}
         />
       </Main>
 
-      <CompaniesDialogs />
+      <AziendeDialogs />
     </>
   )
 }
 
-export function Companies() {
+export function Aziende() {
   return (
-    <CompaniesProvider>
-      <CompaniesContent />
-    </CompaniesProvider>
+    <AziendeProvider>
+      <AziendeContent />
+    </AziendeProvider>
   )
 }

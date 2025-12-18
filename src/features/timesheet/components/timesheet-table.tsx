@@ -61,7 +61,12 @@ export function TimesheetTable({ data, search, navigate }: DataTableProps) {
   const { setOpen, setCurrentRow } = useTimesheet()
   // Local UI-only states
   const [rowSelection, setRowSelection] = useState({})
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
+    week: false,
+    tariffa_billed: false,
+    fattura: false,
+
+  })
   const [sorting, setSorting] = useState<SortingState>([])
 
   // Carica utenti e commesse per i filtri

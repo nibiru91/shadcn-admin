@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-export const companySchema = z.object({
+export const aziendaSchema = z.object({
   id: z.number().optional(),
   ragione_sociale: z.string().min(1, 'La ragione sociale è obbligatoria'),
   description: z.string().optional().nullable(),
@@ -17,4 +17,4 @@ export const companySchema = z.object({
   created_at: z.string().optional(),
 })
 
-export type Company = z.infer<typeof companySchema>
+export type Azienda = z.infer<typeof aziendaSchema>

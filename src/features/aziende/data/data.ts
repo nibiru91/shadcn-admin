@@ -1,6 +1,6 @@
-export type CompanyTag = 'customer' | 'supplier' | 'both'
+export type AziendaTag = 'customer' | 'supplier' | 'both'
 
-export const companyTags: { label: string; value: CompanyTag }[] = [
+export const aziendaTags: { label: string; value: AziendaTag }[] = [
   { label: 'Cliente', value: 'customer' },
   { label: 'Fornitore', value: 'supplier' },
   { label: 'Cliente e fornitore', value: 'both' },

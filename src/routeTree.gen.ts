@@ -30,9 +30,9 @@ import { Route as AuthenticatedPianificazioneIndexRouteImport } from './routes/_
 import { Route as AuthenticatedHelpCenterIndexRouteImport } from './routes/_authenticated/help-center/index'
 import { Route as AuthenticatedFerieIndexRouteImport } from './routes/_authenticated/ferie/index'
 import { Route as AuthenticatedFattureIndexRouteImport } from './routes/_authenticated/fatture/index'
-import { Route as AuthenticatedCompaniesIndexRouteImport } from './routes/_authenticated/companies/index'
 import { Route as AuthenticatedCommesseIndexRouteImport } from './routes/_authenticated/commesse/index'
 import { Route as AuthenticatedChatsIndexRouteImport } from './routes/_authenticated/chats/index'
+import { Route as AuthenticatedAziendeIndexRouteImport } from './routes/_authenticated/aziende/index'
 import { Route as AuthenticatedAppsIndexRouteImport } from './routes/_authenticated/apps/index'
 import { Route as AuthenticatedSettingsNotificationsRouteImport } from './routes/_authenticated/settings/notifications'
 import { Route as AuthenticatedSettingsDisplayRouteImport } from './routes/_authenticated/settings/display'
@@ -152,12 +152,6 @@ const AuthenticatedFattureIndexRoute =
     path: '/fatture/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedCompaniesIndexRoute =
-  AuthenticatedCompaniesIndexRouteImport.update({
-    id: '/companies/',
-    path: '/companies/',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 const AuthenticatedCommesseIndexRoute =
   AuthenticatedCommesseIndexRouteImport.update({
     id: '/commesse/',
@@ -169,6 +163,12 @@ const AuthenticatedChatsIndexRoute = AuthenticatedChatsIndexRouteImport.update({
   path: '/chats/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAziendeIndexRoute =
+  AuthenticatedAziendeIndexRouteImport.update({
+    id: '/aziende/',
+    path: '/aziende/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAppsIndexRoute = AuthenticatedAppsIndexRouteImport.update({
   id: '/apps/',
   path: '/apps/',
@@ -236,9 +236,9 @@ export interface FileRoutesByFullPath {
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/apps': typeof AuthenticatedAppsIndexRoute
+  '/aziende': typeof AuthenticatedAziendeIndexRoute
   '/chats': typeof AuthenticatedChatsIndexRoute
   '/commesse': typeof AuthenticatedCommesseIndexRoute
-  '/companies': typeof AuthenticatedCompaniesIndexRoute
   '/fatture': typeof AuthenticatedFattureIndexRoute
   '/ferie': typeof AuthenticatedFerieIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
@@ -268,9 +268,9 @@ export interface FileRoutesByTo {
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/apps': typeof AuthenticatedAppsIndexRoute
+  '/aziende': typeof AuthenticatedAziendeIndexRoute
   '/chats': typeof AuthenticatedChatsIndexRoute
   '/commesse': typeof AuthenticatedCommesseIndexRoute
-  '/companies': typeof AuthenticatedCompaniesIndexRoute
   '/fatture': typeof AuthenticatedFattureIndexRoute
   '/ferie': typeof AuthenticatedFerieIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
@@ -303,9 +303,9 @@ export interface FileRoutesById {
   '/_authenticated/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/_authenticated/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/_authenticated/apps/': typeof AuthenticatedAppsIndexRoute
+  '/_authenticated/aziende/': typeof AuthenticatedAziendeIndexRoute
   '/_authenticated/chats/': typeof AuthenticatedChatsIndexRoute
   '/_authenticated/commesse/': typeof AuthenticatedCommesseIndexRoute
-  '/_authenticated/companies/': typeof AuthenticatedCompaniesIndexRoute
   '/_authenticated/fatture/': typeof AuthenticatedFattureIndexRoute
   '/_authenticated/ferie/': typeof AuthenticatedFerieIndexRoute
   '/_authenticated/help-center/': typeof AuthenticatedHelpCenterIndexRoute
@@ -338,9 +338,9 @@ export interface FileRouteTypes {
     | '/settings/display'
     | '/settings/notifications'
     | '/apps'
+    | '/aziende'
     | '/chats'
     | '/commesse'
-    | '/companies'
     | '/fatture'
     | '/ferie'
     | '/help-center'
@@ -370,9 +370,9 @@ export interface FileRouteTypes {
     | '/settings/display'
     | '/settings/notifications'
     | '/apps'
+    | '/aziende'
     | '/chats'
     | '/commesse'
-    | '/companies'
     | '/fatture'
     | '/ferie'
     | '/help-center'
@@ -404,9 +404,9 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/display'
     | '/_authenticated/settings/notifications'
     | '/_authenticated/apps/'
+    | '/_authenticated/aziende/'
     | '/_authenticated/chats/'
     | '/_authenticated/commesse/'
-    | '/_authenticated/companies/'
     | '/_authenticated/fatture/'
     | '/_authenticated/ferie/'
     | '/_authenticated/help-center/'
@@ -582,13 +582,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFattureIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/companies/': {
-      id: '/_authenticated/companies/'
-      path: '/companies'
-      fullPath: '/companies'
-      preLoaderRoute: typeof AuthenticatedCompaniesIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/commesse/': {
       id: '/_authenticated/commesse/'
       path: '/commesse'
@@ -601,6 +594,13 @@ declare module '@tanstack/react-router' {
       path: '/chats'
       fullPath: '/chats'
       preLoaderRoute: typeof AuthenticatedChatsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/aziende/': {
+      id: '/_authenticated/aziende/'
+      path: '/aziende'
+      fullPath: '/aziende'
+      preLoaderRoute: typeof AuthenticatedAziendeIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/apps/': {
@@ -690,9 +690,9 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedErrorsErrorRoute: typeof AuthenticatedErrorsErrorRoute
   AuthenticatedAppsIndexRoute: typeof AuthenticatedAppsIndexRoute
+  AuthenticatedAziendeIndexRoute: typeof AuthenticatedAziendeIndexRoute
   AuthenticatedChatsIndexRoute: typeof AuthenticatedChatsIndexRoute
   AuthenticatedCommesseIndexRoute: typeof AuthenticatedCommesseIndexRoute
-  AuthenticatedCompaniesIndexRoute: typeof AuthenticatedCompaniesIndexRoute
   AuthenticatedFattureIndexRoute: typeof AuthenticatedFattureIndexRoute
   AuthenticatedFerieIndexRoute: typeof AuthenticatedFerieIndexRoute
   AuthenticatedHelpCenterIndexRoute: typeof AuthenticatedHelpCenterIndexRoute
@@ -709,9 +709,9 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedErrorsErrorRoute: AuthenticatedErrorsErrorRoute,
   AuthenticatedAppsIndexRoute: AuthenticatedAppsIndexRoute,
+  AuthenticatedAziendeIndexRoute: AuthenticatedAziendeIndexRoute,
   AuthenticatedChatsIndexRoute: AuthenticatedChatsIndexRoute,
   AuthenticatedCommesseIndexRoute: AuthenticatedCommesseIndexRoute,
-  AuthenticatedCompaniesIndexRoute: AuthenticatedCompaniesIndexRoute,
   AuthenticatedFattureIndexRoute: AuthenticatedFattureIndexRoute,
   AuthenticatedFerieIndexRoute: AuthenticatedFerieIndexRoute,
   AuthenticatedHelpCenterIndexRoute: AuthenticatedHelpCenterIndexRoute,

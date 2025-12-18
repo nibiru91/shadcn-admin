@@ -1,14 +1,14 @@
-import { useCompanies } from './companies-provider'
-import { CompaniesActionDialog } from './companies-action-dialog'
-import { CompaniesDeleteDialog } from './companies-delete-dialog'
+import { useAziende } from './aziende-provider'
+import { AziendeActionDialog } from './aziende-action-dialog'
+import { AziendeDeleteDialog } from './aziende-delete-dialog'
 
-export function CompaniesDialogs() {
-  const { open, setOpen, currentRow, setCurrentRow } = useCompanies()
+export function AziendeDialogs() {
+  const { open, setOpen, currentRow, setCurrentRow } = useAziende()
 
   return (
     <>
-      <CompaniesActionDialog
-        key='company-add'
+      <AziendeActionDialog
+        key='azienda-add'
         open={open === 'add'}
         onOpenChange={() => {
           setOpen('add')
@@ -21,8 +21,8 @@ export function CompaniesDialogs() {
 
       {currentRow && (
         <>
-          <CompaniesActionDialog
-            key={`company-edit-${currentRow.id}`}
+          <AziendeActionDialog
+            key={`azienda-edit-${currentRow.id}`}
             open={open === 'edit'}
             onOpenChange={() => {
               setOpen('edit')
@@ -33,8 +33,8 @@ export function CompaniesDialogs() {
             currentRow={currentRow}
           />
 
-          <CompaniesDeleteDialog
-            key={`company-delete-${currentRow.id}`}
+          <AziendeDeleteDialog
+            key={`azienda-delete-${currentRow.id}`}
             open={open === 'delete'}
             onOpenChange={() => {
               setOpen('delete')
