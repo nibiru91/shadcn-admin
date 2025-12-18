@@ -15,7 +15,10 @@ import {
   fetchTimesheetTotali,
   fetchFattureTotali,
   fetchCommessaDettagli,
+  fetchFattureAcquisto,
+  fetchFattureVendita,
 } from './utils/riepilogo-data'
+import { ExternalLink } from 'lucide-react'
 
 export function CommessaRiepilogo() {
   const search = useSearch({ from: '/_authenticated/commesse/riepilogo/' })
@@ -46,11 +49,26 @@ export function CommessaRiepilogo() {
     enabled: !!commessaId,
   })
 
+  const { data: fattureAcquisto, isLoading: isLoadingFattureAcquisto } = useQuery({
+    queryKey: ['fatture-acquisto-totali', commessaId],
+    queryFn: () => fetchFattureAcquisto(commessaId!),
+    enabled: !!commessaId,
+  })
+
+  const { data: fattureVendita, isLoading: isLoadingFattureVendita } = useQuery({
+    queryKey: ['fatture-vendita-totali', commessaId],
+    queryFn: () => fetchFattureVendita(commessaId!),
+    enabled: !!commessaId,
+  })
+
+
   const isLoading =
     isLoadingCommessa ||
     isLoadingPianificazioni ||
     isLoadingTimesheet ||
-    isLoadingFatture
+    isLoadingFatture ||
+    isLoadingFattureAcquisto ||
+    isLoadingFattureVendita
 
   if (!commessaId) {
     return (
@@ -156,6 +174,7 @@ export function CommessaRiepilogo() {
             subtitle='Totale ore pianificate'
             saturazione={saturazionePianificazioni}
             orePreviste={commessa.ore_previste}
+            link={`/pianificazione?commessa=${commessa.id}`}
           />
           <RiepilogoStatsCard
             title='Timesheet Lavorate'
@@ -164,27 +183,7 @@ export function CommessaRiepilogo() {
             saturazione={saturazioneTimesheet}
             orePreviste={commessa.ore_previste}
           />
-          <RiepilogoStatsCard
-            title='Risultato Netto'
-            value={formatCurrency(fatture?.totale_netto || 0)}
-            subtitle='Totale delle righe presenti nelle fatture'
-          />
-          <RiepilogoStatsCard
-            title='Funzionalità Futura'
-            value='-'
-            subtitle='In sviluppo'
-          />
-        </div>
 
-          {/* Grid a 4 colonne per le statistiche */}
-          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
-          <RiepilogoStatsCard
-            title='Pianificazioni Collegate'
-            value={`${(pianificazioni?.totale_ore || 0).toFixed(2)} ore`}
-            subtitle='Totale ore pianificate'
-            saturazione={saturazionePianificazioni}
-            orePreviste={commessa.ore_previste}
-          />
           <RiepilogoStatsCard
             title='Timesheet Billable'
             value={`${(timesheet?.totale_ore_billable || 0).toFixed(2)} ore`}
@@ -192,17 +191,60 @@ export function CommessaRiepilogo() {
             saturazione={saturazioneTimesheetBillable}
             orePreviste={commessa.ore_previste}
           />
+
+
+          <RiepilogoStatsCard
+            title={'Inefficienza rilevata: ' + (((timesheet?.totale_ore_lavorate || 0) - (timesheet?.totale_ore_billable || 0)) / (timesheet?.totale_ore_lavorate || 0) * 100).toFixed(2) + '%'}
+            value={`${((timesheet?.totale_ore_lavorate || 0) - (timesheet?.totale_ore_billable || 0)).toFixed(2)} ore`}
+            subtitle='Ore lavorate non billable'
+          />
+        </div>
+
+          {/* Grid a 4 colonne per le statistiche */}
+          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+
+          <RiepilogoStatsCard
+            title='Ricavi'
+            value={formatCurrency(fattureVendita?.totale_vendite || 0)}
+            subtitle='Fatture emesse'
+          />
+
+          <RiepilogoStatsCard
+            title='Costi'
+            value={formatCurrency(fattureAcquisto?.totale_acquisti || 0)}
+            subtitle='Fatture ricevute'
+          />
           <RiepilogoStatsCard
             title='Risultato Netto'
             value={formatCurrency(fatture?.totale_netto || 0)}
-            subtitle='Totale delle righe presenti nelle fatture'
+            subtitle='Fatture emesse - Fatture ricevute'
+          />
+        </div>
+
+
+          {/* Grid a 4 colonne per le statistiche */}
+          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+
+          <RiepilogoStatsCard
+            title='Incassato'
+            value={formatCurrency(fattureVendita?.totale_vendite || 0)}
+            subtitle='Importi incassati'
+          />
+
+          <RiepilogoStatsCard
+            title='Pagato'
+            value={formatCurrency(fattureAcquisto?.totale_acquisti || 0)}
+            subtitle='Importi pagati'
           />
           <RiepilogoStatsCard
-            title='Funzionalità Futura'
+            title='Cash Flow Netto'
             value='-'
-            subtitle='In sviluppo'
+            subtitle='Importi incassati - Importi pagati'
           />
-        </div>\
+        </div>
+
+
+        
 
         {/* Dettagli commessa */}
         <RiepilogoDettagli commessa={commessa} />

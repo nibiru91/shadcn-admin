@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
+import { ExternalLink as Link } from 'lucide-react'
 
 type RiepilogoStatsCardProps = {
   title: string
@@ -9,6 +10,7 @@ type RiepilogoStatsCardProps = {
   subtitle?: string
   saturazione?: number // Percentuale 0-100
   orePreviste?: number | null
+  link?: string | null
 }
 
 function ProgressBar({ value, className }: { value: number; className?: string }) {
@@ -36,6 +38,7 @@ export function RiepilogoStatsCard({
   subtitle,
   saturazione,
   orePreviste,
+  link,
 }: RiepilogoStatsCardProps) {
   const showSaturazione = saturazione !== undefined && orePreviste !== null && orePreviste > 0
   const saturazioneColor = showSaturazione ? getSaturazioneColor(saturazione) : ''
@@ -43,7 +46,19 @@ export function RiepilogoStatsCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className='text-base'>{title}</CardTitle>
+        <CardTitle className='text-base'>{title}
+        {/*<Link href={link}>{link}</Link>*/}
+        {link && <a 
+        href={link} 
+        target="_blank" 
+        rel="noopener noreferrer"
+        class="text-muted-foreground hover:text-primary transition-colors"
+        >
+        <Link size={18} />
+        </a>}
+
+      </CardTitle>
+
       </CardHeader>
       <CardContent className='space-y-3'>
         <div>

@@ -13,6 +13,14 @@ export type FattureTotali = {
   totale_netto: number
 }
 
+export type FattureAcquisto = {
+  totale_acquisti: number
+}
+
+export type FattureVendita = {
+  totale_vendite: number
+}
+
 export type CommessaDettagli = {
   id: number
   title: string
@@ -100,6 +108,44 @@ export async function fetchFattureTotali(
   )
 
   return { totale_netto }
+}
+
+export async function fetchFattureAcquisto(
+  commessaId: number
+): Promise<FattureAcquisto> {
+  const { data, error } = await supabase
+    .from('fatture_righe')
+    .select('totale_riga')
+    .eq('id_commessa', commessaId)
+    .lt('totale_riga', 0)
+
+  if (error) throw new Error(error.message)
+
+  const totale_acquisti = (data || []).reduce(
+    (sum, item) => sum + (item.totale_riga || 0),
+    0
+  )
+
+  return { totale_acquisti }
+}
+
+export async function fetchFattureVendita(
+  commessaId: number
+): Promise<FattureVendita> {
+  const { data, error } = await supabase
+    .from('fatture_righe')
+    .select('totale_riga')
+    .eq('id_commessa', commessaId)
+    .gt('totale_riga', 0)
+
+  if (error) throw new Error(error.message)
+
+  const totale_vendite = (data || []).reduce(
+    (sum, item) => sum + (item.totale_riga || 0),
+    0
+  )
+
+  return { totale_vendite }
 }
 
 export async function fetchCommessaDettagli(
