@@ -12,6 +12,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 import { cn } from '@/lib/utils'
+import { useNavigate } from '@tanstack/react-router'
 import { type NavigateFn, useTableUrlState } from '@/hooks/use-table-url-state'
 import {
   Table,
@@ -49,6 +50,7 @@ async function fetchCompanies() {
 
 export function CommesseTable({ data, search, navigate }: DataTableProps) {
   const { setOpen, setCurrentRow } = useCommesse()
+  const routerNavigate = useNavigate()
   // Local UI-only states
   const [rowSelection, setRowSelection] = useState({})
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
@@ -257,8 +259,12 @@ export function CommesseTable({ data, search, navigate }: DataTableProps) {
                     ) {
                       return
                     }
-                    setCurrentRow(row.original)
-                    setOpen('edit')
+                    if (row.original.id) {
+                      routerNavigate({
+                        to: '/commesse/riepilogo',
+                        search: { commessaId: String(row.original.id) },
+                      })
+                    }
                   }}
                 >
                   {row.getVisibleCells().map((cell) => (

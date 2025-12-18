@@ -40,7 +40,7 @@ export function RiepilogoStatsCard({
   orePreviste,
   link,
 }: RiepilogoStatsCardProps) {
-  const showSaturazione = saturazione !== undefined && orePreviste !== null && orePreviste > 0
+  const showSaturazione = saturazione !== undefined && orePreviste !== null && orePreviste !== undefined && orePreviste > 0
   const saturazioneColor = showSaturazione ? getSaturazioneColor(saturazione) : ''
 
   return (

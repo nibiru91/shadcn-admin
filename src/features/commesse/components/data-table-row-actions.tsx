@@ -1,6 +1,6 @@
 import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 import { type Row } from '@tanstack/react-table'
-import { useNavigate } from '@tanstack/react-router'
+import { getRouteApi } from '@tanstack/react-router'
 import { Trash2, Pencil, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -18,9 +18,11 @@ type DataTableRowActionsProps = {
   row: Row<Commessa>
 }
 
+const route = getRouteApi('/_authenticated/commesse/')
+
 export function DataTableRowActions({ row }: DataTableRowActionsProps) {
   const { setOpen, setCurrentRow } = useCommesse()
-  const navigate = useNavigate({ from: '/_authenticated/commesse/' })
+  const navigate = route.useNavigate()
   
   return (
     <>
@@ -37,22 +39,6 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
         <DropdownMenuContent align='end' className='w-[160px]'>
           <DropdownMenuItem
             onClick={(e) => {
-              e.stopPropagation() // Previeni la propagazione del click alla TableRow
-              e.preventDefault() // Previeni anche il comportamento di default
-              // Usa setTimeout per assicurarsi che il DropdownMenu si chiuda prima di aprire il Dialog
-              setTimeout(() => {
-                setCurrentRow(row.original)
-                setOpen('edit')
-              }, 0)
-            }}
-          >
-            Modifica
-            <DropdownMenuShortcut>
-              <Pencil size={16} />
-            </DropdownMenuShortcut>
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={(e) => {
               e.stopPropagation()
               e.preventDefault()
               if (row.original.id) {
@@ -66,6 +52,22 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
             Riepilogo
             <DropdownMenuShortcut>
               <FileText size={16} />
+            </DropdownMenuShortcut>
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={(e) => {
+              e.stopPropagation() // Previeni la propagazione del click alla TableRow
+              e.preventDefault() // Previeni anche il comportamento di default
+              // Usa setTimeout per assicurarsi che il DropdownMenu si chiuda prima di aprire il Dialog
+              setTimeout(() => {
+                setCurrentRow(row.original)
+                setOpen('edit')
+              }, 0)
+            }}
+          >
+            Modifica
+            <DropdownMenuShortcut>
+              <Pencil size={16} />
             </DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
