@@ -122,6 +122,11 @@ export function CommessaRiepilogo() {
       ? (timesheet?.totale_ore_lavorate || 0) / commessa.ore_previste * 100
       : undefined
 
+  const saturazioneTimesheetBillable =
+    commessa.ore_previste && commessa.ore_previste > 0
+      ? (timesheet?.totale_ore_billable || 0) / commessa.ore_previste * 100
+      : undefined
+
   return (
     <>
       <Header fixed>
@@ -153,16 +158,16 @@ export function CommessaRiepilogo() {
             orePreviste={commessa.ore_previste}
           />
           <RiepilogoStatsCard
-            title='Timesheet Collegati'
+            title='Timesheet Lavorate'
             value={`${(timesheet?.totale_ore_lavorate || 0).toFixed(2)} ore`}
-            subtitle={`Billable: ${(timesheet?.totale_ore_billable || 0).toFixed(2)} ore`}
+            subtitle='Totale ore lavorate'
             saturazione={saturazioneTimesheet}
             orePreviste={commessa.ore_previste}
           />
           <RiepilogoStatsCard
-            title='Righe Fatture Collegate'
+            title='Risultato Netto'
             value={formatCurrency(fatture?.totale_netto || 0)}
-            subtitle='Totale netto righe'
+            subtitle='Totale delle righe presenti nelle fatture'
           />
           <RiepilogoStatsCard
             title='Funzionalità Futura'
@@ -170,6 +175,34 @@ export function CommessaRiepilogo() {
             subtitle='In sviluppo'
           />
         </div>
+
+          {/* Grid a 4 colonne per le statistiche */}
+          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
+          <RiepilogoStatsCard
+            title='Pianificazioni Collegate'
+            value={`${(pianificazioni?.totale_ore || 0).toFixed(2)} ore`}
+            subtitle='Totale ore pianificate'
+            saturazione={saturazionePianificazioni}
+            orePreviste={commessa.ore_previste}
+          />
+          <RiepilogoStatsCard
+            title='Timesheet Billable'
+            value={`${(timesheet?.totale_ore_billable || 0).toFixed(2)} ore`}
+            subtitle='Totale ore billable'
+            saturazione={saturazioneTimesheetBillable}
+            orePreviste={commessa.ore_previste}
+          />
+          <RiepilogoStatsCard
+            title='Risultato Netto'
+            value={formatCurrency(fatture?.totale_netto || 0)}
+            subtitle='Totale delle righe presenti nelle fatture'
+          />
+          <RiepilogoStatsCard
+            title='Funzionalità Futura'
+            value='-'
+            subtitle='In sviluppo'
+          />
+        </div>\
 
         {/* Dettagli commessa */}
         <RiepilogoDettagli commessa={commessa} />
