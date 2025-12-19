@@ -54,7 +54,7 @@ export const usersColumns: ColumnDef<User>[] = [
       return <span>{fullName}</span>
     },
     meta: { label: 'Nome' },
-    filterFn: (row, id, value) => {
+    filterFn: (row, _id, value) => {
       if (!value || typeof value !== 'string') return true
       const searchValue = value.toLowerCase().trim()
       if (!searchValue) return true

@@ -6,7 +6,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
 import { useQueryClient } from '@tanstack/react-query'
 import React, { useEffect } from 'react'
-import { startOfISOWeek } from 'date-fns'
 import { calculateISOWeekFromDate } from '@/lib/date-utils'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
@@ -33,7 +32,6 @@ import { DatePicker } from '@/components/date-picker'
 import { timesheetSchema, Timesheet } from '../data/schema'
 import { UserCombobox } from './user-combobox'
 import { CommessaCombobox } from './commessa-combobox'
-import type { z } from 'zod'
 
 type TimesheetFormData = z.input<typeof timesheetSchema>
 
@@ -254,8 +252,11 @@ export function TimesheetActionDialog({
                         step='0.5'
                         min='0'
                         {...field}
-                        value={field.value ?? ''}
-                        onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : 0)}
+                        value={typeof field.value === 'number' ? field.value : ''}
+                        onChange={(e) => {
+                          const val = e.target.value
+                          field.onChange(val ? (isNaN(parseFloat(val)) ? 0 : parseFloat(val)) : 0)
+                        }}
                       />
                     </FormControl>
                     <FormDescription>Precisione: 0.5 ore</FormDescription>
@@ -275,8 +276,11 @@ export function TimesheetActionDialog({
                         step='0.5'
                         min='0'
                         {...field}
-                        value={field.value ?? ''}
-                        onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : 0)}
+                        value={typeof field.value === 'number' ? field.value : ''}
+                        onChange={(e) => {
+                          const val = e.target.value
+                          field.onChange(val ? (isNaN(parseFloat(val)) ? 0 : parseFloat(val)) : 0)
+                        }}
                       />
                     </FormControl>
                     <FormDescription>Ore fatturabili (opzionale)</FormDescription>
@@ -348,7 +352,7 @@ export function TimesheetActionDialog({
                         min='1'
                         max='53'
                         {...field}
-                        value={field.value ?? ''}
+                        value={typeof field.value === 'number' ? field.value : ''}
                         disabled={!!giorno}
                         readOnly={!!giorno}
                         className={giorno ? 'bg-muted cursor-not-allowed' : ''}
@@ -373,7 +377,7 @@ export function TimesheetActionDialog({
                         min='1'
                         max='12'
                         {...field}
-                        value={field.value ?? ''}
+                        value={typeof field.value === 'number' ? field.value : ''}
                         disabled={true}
                         readOnly={true}
                         className='bg-muted cursor-not-allowed'
@@ -396,7 +400,7 @@ export function TimesheetActionDialog({
                         min='2000'
                         max='2100'
                         {...field}
-                        value={field.value ?? ''}
+                        value={typeof field.value === 'number' ? field.value : ''}
                         disabled={true}
                         readOnly={true}
                         className='bg-muted cursor-not-allowed'

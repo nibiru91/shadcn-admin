@@ -11,6 +11,7 @@ export function UsersDialogs() {
         key='user-add'
         open={open === 'add'}
         onOpenChange={() => setOpen('add')}
+        currentRow={null}
       />
 
       <UsersInviteDialog

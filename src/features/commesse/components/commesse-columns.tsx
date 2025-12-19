@@ -40,7 +40,7 @@ export const commesseColumns: ColumnDef<Commessa>[] = [
 		enableSorting: false,
 		enableHiding: false,
 		meta: { thClassName: 'hidden', tdClassName: 'hidden', hideInViewOptions: true },
-		filterFn: (row, id, value) => {
+		filterFn: (row, _id, value) => {
 			if (!value || typeof value !== 'string') return true
 			const searchValue = value.toLowerCase().trim()
 			if (!searchValue) return true

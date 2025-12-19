@@ -10,7 +10,6 @@ import { ConfigDrawer } from '@/components/config-drawer'
 import { PianificazioneProvider } from './components/pianificazione-provider'
 import { PianificazioneDialogs } from './components/pianificazione-dialogs'
 import { PianificazioneTable } from './components/pianificazione-table'
-import { pianificazioneColumns } from './components/pianificazione-columns'
 import { PianificazionePrimaryButtons } from './components/pianificazione-primary-buttons'
 import { Planning } from './data/schema'
 
@@ -65,7 +64,6 @@ function PianificazioneContent() {
           <PianificazionePrimaryButtons />
         </div>
         <PianificazioneTable 
-          columns={pianificazioneColumns} 
           data={pianificazione || []} 
           search={search}
           navigate={navigate}

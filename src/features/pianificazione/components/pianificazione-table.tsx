@@ -181,7 +181,6 @@ export function PianificazioneTable({ data, search, navigate }: DataTableProps) 
   const weekColumn = table.getColumn('week')
   const annoColumn = table.getColumn('anno')
   const meseColumn = table.getColumn('mese')
-  const delayableColumn = table.getColumn('is_delayable')
 
   function getUserDisplayName(user: any): string {
     if (!user) return ''

@@ -625,7 +625,7 @@ export function CommesseActionDialog({
                         type='number'
                         step='0.5'
                         min='0'
-                        value={typeof field.value === 'number' ? field.value : (field.value ?? '')}
+                        value={typeof field.value === 'number' ? field.value : ''}
                         onChange={(e) => {
                           const val = e.target.value
                           field.onChange(val ? (isNaN(parseFloat(val)) ? 0 : parseFloat(val)) : 0)
@@ -647,7 +647,7 @@ export function CommesseActionDialog({
                         type='number'
                         step='0.01'
                         min='0'
-                        value={typeof field.value === 'number' ? field.value : (field.value ?? '')}
+                        value={typeof field.value === 'number' ? field.value : ''}
                         onChange={(e) => {
                           const val = e.target.value
                           field.onChange(val ? (isNaN(parseFloat(val)) ? 0 : parseFloat(val)) : 0)

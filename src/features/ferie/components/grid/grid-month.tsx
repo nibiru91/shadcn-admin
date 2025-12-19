@@ -9,7 +9,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { GridCell } from './grid-cell'
-import { useGridData, type GridData } from './use-grid-data'
+import { useGridData } from './use-grid-data'
 import { type Ferie } from '../../data/schema'
 import { formatDayHeader } from './grid-utils'
 

@@ -38,7 +38,7 @@ export const pianificazioneColumns: ColumnDef<Planning>[] = [
     enableSorting: false,
     enableHiding: false,
     meta: { thClassName: 'hidden', tdClassName: 'hidden', hideInViewOptions: true },
-    filterFn: (row, id, value) => {
+    filterFn: (row, _id, value) => {
       if (!value || typeof value !== 'string') return true
       const searchValue = value.toLowerCase().trim()
       if (!searchValue) return true
@@ -64,7 +64,7 @@ export const pianificazioneColumns: ColumnDef<Planning>[] = [
       const displayName = parts.length > 0 ? parts.join(' ') : `User #${user.id || row.original.user_id}`
       return <span>{displayName}</span>
     },
-    filterFn: (row, id, value) => {
+    filterFn: (row, _id, value) => {
       if (!Array.isArray(value) || value.length === 0) return true
       // Estrai l'ID se user_id è un oggetto dal join, altrimenti usa direttamente il valore
       const userId = typeof row.original.user_id === 'object' && row.original.user_id !== null
@@ -86,7 +86,7 @@ export const pianificazioneColumns: ColumnDef<Planning>[] = [
       if (!commessa) return <span className='text-muted-foreground text-xs'>-</span>
       return <span>{commessa.title || `Commessa #${row.original.commessa}`}</span>
     },
-    filterFn: (row, id, value) => {
+    filterFn: (row, _id, value) => {
       if (!Array.isArray(value) || value.length === 0) return true
       // Estrai l'ID se commessa è un oggetto dal join, altrimenti usa direttamente il valore
       const commessaId = typeof row.original.commessa === 'object' && row.original.commessa !== null

@@ -18,7 +18,6 @@ import {
   fetchFattureAcquisto,
   fetchFattureVendita,
 } from './utils/riepilogo-data'
-import { ExternalLink } from 'lucide-react'
 
 export function CommessaRiepilogo() {
   const search = useSearch({ from: '/_authenticated/commesse/riepilogo/' })

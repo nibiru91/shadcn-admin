@@ -1,7 +1,6 @@
 import { useTimesheet } from './timesheet-provider'
 import { TimesheetActionDialog } from './timesheet-action-dialog'
 import { TimesheetDeleteDialog } from './timesheet-delete-dialog'
-import { TimesheetMultiDeleteDialog } from './timesheet-multi-delete-dialog'
 
 export function TimesheetDialogs() {
   const { open, setOpen, currentRow, setCurrentRow } = useTimesheet()

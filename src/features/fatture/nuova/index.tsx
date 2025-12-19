@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useNavigate, useSearch } from '@tanstack/react-router'
+import { useSearch } from '@tanstack/react-router'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { Header } from '@/components/layout/header'
@@ -182,7 +182,6 @@ async function fetchCommessa(commessaId: number) {
 }
 
 export function NuovaFattura() {
-  const navigate = useNavigate()
   const queryClient = useQueryClient()
   const search = useSearch({ from: '/_authenticated/fatture/nuova/' })
 
@@ -262,7 +261,7 @@ export function NuovaFattura() {
 
   const salvaMutation = useMutation({
     mutationFn: salvaFattura,
-    onSuccess: (idFattura) => {
+    onSuccess: () => {
       toast.success('Fattura creata con successo!')
       queryClient.invalidateQueries({ queryKey: ['fatture'] })
       queryClient.invalidateQueries({ queryKey: ['timesheet'] })

@@ -14,7 +14,7 @@ import { FerieTable } from './components/ferie-table'
 import { FeriePrimaryButtons } from './components/ferie-primary-buttons'
 import { FerieCalendar } from './components/calendar'
 import { FerieGrid } from './components/grid'
-import { Ferie } from './data/schema'
+import type { Ferie } from './data/schema'
 
 const route = getRouteApi('/_authenticated/ferie/')
 

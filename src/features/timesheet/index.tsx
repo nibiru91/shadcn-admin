@@ -11,7 +11,7 @@ import { TimesheetProvider } from './components/timesheet-provider'
 import { TimesheetDialogs } from './components/timesheet-dialogs'
 import { TimesheetTable } from './components/timesheet-table'
 import { TimesheetPrimaryButtons } from './components/timesheet-primary-buttons'
-import { Timesheet } from './data/schema'
+import type { Timesheet } from './data/schema'
 
 const route = getRouteApi('/_authenticated/timesheet/')
 

@@ -66,7 +66,7 @@ export const fattureColumns: ColumnDef<Fattura>[] = [
     enableSorting: false,
     enableHiding: false,
     meta: { thClassName: 'hidden', tdClassName: 'hidden', hideInViewOptions: true },
-    filterFn: (row, id, value) => {
+    filterFn: (row, _id, value) => {
       if (!value || typeof value !== 'string') return true
       const searchValue = value.toLowerCase().trim()
       if (!searchValue) return true
@@ -133,7 +133,7 @@ export const fattureColumns: ColumnDef<Fattura>[] = [
       const clienteName = (cliente as any).ragione_sociale || `Cliente #${(cliente as any).id || row.original.id_cliente}`
       return <span>{clienteName}</span>
     },
-    filterFn: (row, id, value) => {
+    filterFn: (row, _id, value) => {
       if (!Array.isArray(value) || value.length === 0) return true
       const clienteId = typeof row.original.id_cliente === 'object' && row.original.id_cliente !== null
         ? (row.original.id_cliente as any)?.id ?? row.original.id_cliente

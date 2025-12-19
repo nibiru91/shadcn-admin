@@ -1,6 +1,5 @@
 'use client'
 
-import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
@@ -34,6 +33,9 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { userSchema, type User } from '../data/schema'
+import type { z } from 'zod'
+
+type UserFormData = z.input<typeof userSchema>
 
 interface UsersActionDialogProps {
   open: boolean
@@ -52,7 +54,7 @@ export function UsersActionDialog({
   // Usa gli enums dal contesto globale
   const { ruoli: ruoliValues, isLoading: isLoadingEnums } = useEnums()
 
-  const form = useForm<User>({
+  const form = useForm<UserFormData>({
     resolver: zodResolver(userSchema),
     defaultValues: currentRow
       ? {
@@ -119,16 +121,19 @@ export function UsersActionDialog({
     }
   }, [currentRow, form, isLoadingEnums, open, ruoliValues.length])
 
-  const onSubmit = async (values: User) => {
+  const onSubmit = async (values: UserFormData) => {
     try {
+      // Parse through schema to apply defaults
+      const parsedData = userSchema.parse(values)
+      
       if (isEdit && currentRow?.id) {
         // Update
         const { error } = await supabase
           .from('users_profile')
           .update({
-            name: values.name || null,
-            surname: values.surname || null,
-            ruolo: values.ruolo || null,
+            name: parsedData.name || null,
+            surname: parsedData.surname || null,
+            ruolo: parsedData.ruolo || null,
           })
           .eq('id', currentRow.id)
 
@@ -139,9 +144,9 @@ export function UsersActionDialog({
         const { error } = await supabase
           .from('users_profile')
           .insert({
-            name: values.name || null,
-            surname: values.surname || null,
-            ruolo: values.ruolo || null,
+            name: parsedData.name || null,
+            surname: parsedData.surname || null,
+            ruolo: parsedData.ruolo || null,
           })
 
         if (error) throw error

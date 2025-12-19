@@ -28,7 +28,6 @@ import { DataTableBulkActions } from './data-table-bulk-actions'
 import { commesseColumns as columns } from './commesse-columns'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
-import { useCommesse } from './commesse-provider'
 import { useEnums } from '@/context/enums-provider'
 
 type DataTableProps = {
@@ -49,7 +48,6 @@ async function fetchAziende() {
 }
 
 export function CommesseTable({ data, search, navigate }: DataTableProps) {
-  const { setOpen, setCurrentRow } = useCommesse()
   const routerNavigate = useNavigate()
   // Local UI-only states
   const [rowSelection, setRowSelection] = useState({})

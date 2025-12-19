@@ -47,7 +47,7 @@ async function fetchAziende() {
 }
 
 export function FattureTable({ data, search, navigate }: DataTableProps) {
-  const { setOpen, setCurrentRow } = useFatture()
+  const { setCurrentRow } = useFatture()
   // Local UI-only states
   const [rowSelection, setRowSelection] = useState({})
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})

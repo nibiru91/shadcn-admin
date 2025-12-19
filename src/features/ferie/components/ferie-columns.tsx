@@ -49,7 +49,7 @@ export const ferieColumns: ColumnDef<Ferie>[] = [
       const displayName = parts.length > 0 ? parts.join(' ') : `User #${user.id || row.original.user_id}`
       return <span>{displayName}</span>
     },
-    filterFn: (row, id, value) => {
+    filterFn: (row, _id, value) => {
       if (!Array.isArray(value) || value.length === 0) return true
       // Estrai l'ID se user_id è un oggetto dal join, altrimenti usa direttamente il valore
       const userId = typeof row.original.user_id === 'object' && row.original.user_id !== null

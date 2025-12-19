@@ -73,7 +73,7 @@ export const aziendeColumns: ColumnDef<Azienda>[] = [
 				</div>
 			)
 		},
-		filterFn: (row, id, value) => {
+		filterFn: (row, _id, value) => {
 			if (!Array.isArray(value) || value.length === 0) return true
 			const isCustomer = row.original.is_customer
 			const isSupplier = row.original.is_supplier
@@ -109,7 +109,7 @@ export const aziendeColumns: ColumnDef<Azienda>[] = [
 		enableSorting: false,
 		enableHiding: false,
 		meta: { thClassName: 'hidden', tdClassName: 'hidden', hideInViewOptions: true },
-		filterFn: (row, id, value) => {
+		filterFn: (row, _id, value) => {
 			if (!value || typeof value !== 'string') return true
 			const searchValue = value.toLowerCase().trim()
 			if (!searchValue) return true

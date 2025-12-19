@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { useFatture } from './fatture-provider'
 
 export function FatturePrimaryButtons() {
-  const { setOpen } = useFatture()
+  useFatture()
   return (
     <div className='flex gap-2'>
       <Button

@@ -5,7 +5,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
 import { useQueryClient } from '@tanstack/react-query'
 import React, { useEffect } from 'react'
-import { getISOWeek, getISOWeekYear, startOfISOWeek } from 'date-fns'
 import { calculateISOWeekFromDate } from '@/lib/date-utils'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
@@ -36,8 +35,11 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { DatePicker } from '@/components/date-picker'
-import { ferieFormSchema, FerieForm } from '../data/schema'
+import { ferieFormSchema } from '../data/schema'
 import { UserCombobox } from './user-combobox'
+import type { z } from 'zod'
+
+type FerieFormData = z.input<typeof ferieFormSchema>
 
 interface FerieActionDialogProps {
   open: boolean
@@ -54,7 +56,7 @@ export function FerieActionDialog({
   const queryClient = useQueryClient()
   const [isLoadingRequest, setIsLoadingRequest] = React.useState(false)
 
-  const form = useForm<FerieForm>({
+  const form = useForm<FerieFormData>({
     resolver: zodResolver(ferieFormSchema),
     defaultValues: {
       user_id: undefined,
@@ -204,7 +206,7 @@ export function FerieActionDialog({
     return workingDays
   }
 
-  async function onSubmit(data: FerieForm) {
+  async function onSubmit(data: FerieFormData) {
     try {
       const requestId = isEdit && currentRow ? currentRow.request_id : null
 
@@ -594,8 +596,11 @@ export function FerieActionDialog({
                           min='0.5'
                           max='8'
                           {...field}
-                          value={field.value ?? ''}
-                          onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : 0)}
+                          value={typeof field.value === 'number' ? field.value : ''}
+                          onChange={(e) => {
+                            const val = e.target.value
+                            field.onChange(val ? (isNaN(parseFloat(val)) ? 0 : parseFloat(val)) : 0)
+                          }}
                           disabled={isEdit}
                           readOnly={isEdit}
                         />
