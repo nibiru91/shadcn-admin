@@ -203,20 +203,20 @@ export function NuovaFattura() {
   const { data: timesheetData = [] } = useQuery({
     queryKey: ['timesheet-for-invoice', timesheetIds],
     queryFn: () => fetchTimesheetByIds(timesheetIds),
-    enabled: hasUrlParams && timesheetIds.length > 0,
+    enabled: !!(hasUrlParams && timesheetIds.length > 0),
   })
 
   // Carica commessa se c'è il parametro
   const { data: commessaData } = useQuery({
     queryKey: ['commessa-for-invoice', commessaId],
     queryFn: () => fetchCommessa(commessaId!),
-    enabled: hasUrlParams && !!commessaId,
+    enabled: !!(hasUrlParams && commessaId),
   })
 
   const [state, setState] = React.useState<WizardState>({
     tipoFattura: hasUrlParams ? 'emessa' : undefined,
     idCliente: hasUrlParams ? idCliente : undefined,
-    aziendaConfermata: hasUrlParams,
+    aziendaConfermata: !!hasUrlParams,
     numero: '',
     dataEmissione: undefined,
     metodoPagamento: undefined,

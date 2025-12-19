@@ -34,6 +34,9 @@ import { DatePicker } from '@/components/date-picker'
 import { planningSchema, Planning } from '../data/schema'
 import { UserCombobox } from './user-combobox'
 import { CommessaCombobox } from './commessa-combobox'
+import type { z } from 'zod'
+
+type PlanningFormData = z.input<typeof planningSchema>
 
 interface PianificazioneActionDialogProps {
   open: boolean
@@ -49,7 +52,7 @@ export function PianificazioneActionDialog({
   const isEdit = !!currentRow
   const queryClient = useQueryClient()
 
-  const form = useForm<Planning>({
+  const form = useForm<PlanningFormData>({
     resolver: zodResolver(planningSchema),
     defaultValues: currentRow
       ? {
@@ -123,10 +126,13 @@ export function PianificazioneActionDialog({
     }
   }, [currentRow, form, open])
 
-  async function onSubmit(data: Planning) {
+  async function onSubmit(data: PlanningFormData) {
     try {
+      // Parse through schema to apply defaults
+      const parsedData = planningSchema.parse(data)
+      
       const submitData = {
-        ...data,
+        ...parsedData,
         is_valid: isEdit ? currentRow?.is_valid ?? true : true,
       }
 

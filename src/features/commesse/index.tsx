@@ -10,7 +10,6 @@ import { ConfigDrawer } from '@/components/config-drawer'
 import { CommesseProvider } from './components/commesse-provider'
 import { CommesseDialogs } from './components/commesse-dialogs'
 import { CommesseTable } from './components/commesse-table'
-import { commesseColumns } from './components/commesse-columns'
 import { CommessePrimaryButtons } from './components/commesse-primary-buttons'
 
 const route = getRouteApi('/_authenticated/commesse/')
@@ -64,7 +63,6 @@ function CommesseContent() {
           <CommessePrimaryButtons />
         </div>
         <CommesseTable 
-          columns={commesseColumns} 
           data={commesse || []} 
           search={search}
           navigate={navigate}

@@ -40,6 +40,8 @@ import { DatePicker } from '@/components/date-picker'
 import { commessaSchema, Commessa } from '../data/schema'
 import { AziendaCombobox } from './azienda-combobox'
 
+type CommessaFormData = z.input<typeof commessaSchema>
+
 interface CommesseActionDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -57,7 +59,7 @@ export function CommesseActionDialog({
   // Usa gli enums dal contesto globale
   const { tipologia: tipologiaValues, stato: statoValues, area: areaValues, categoria: categoriaValues, isLoading: isLoadingEnums } = useEnums()
 
-  const form = useForm<Commessa>({
+  const form = useForm<CommessaFormData>({
     resolver: zodResolver(commessaSchema),
     defaultValues: currentRow
       ? {
@@ -179,17 +181,20 @@ export function CommesseActionDialog({
     }
   }, [currentRow, form, isLoadingEnums, tipologiaValues.length, statoValues.length, areaValues.length, categoriaValues.length, open])
 
-  async function onSubmit(data: Commessa) {
+  async function onSubmit(data: CommessaFormData) {
     try {
+      // Parse through schema to apply defaults
+      const parsedData = commessaSchema.parse(data)
+      
       // Le date sono già stringhe nel formato corretto dal form
       // Converti __none__ in null per i campi enum
       // is_valid è sempre true in creazione, e non viene modificato in edit
       const submitData = {
-        ...data,
-        tipologia: data.tipologia === '__none__' ? null : data.tipologia,
-        stato: data.stato === '__none__' ? null : data.stato,
-        area: data.area === '__none__' ? null : data.area,
-        categoria: data.categoria === '__none__' ? null : data.categoria,
+        ...parsedData,
+        tipologia: parsedData.tipologia === '__none__' ? null : parsedData.tipologia,
+        stato: parsedData.stato === '__none__' ? null : parsedData.stato,
+        area: parsedData.area === '__none__' ? null : parsedData.area,
+        categoria: parsedData.categoria === '__none__' ? null : parsedData.categoria,
         is_valid: isEdit ? currentRow?.is_valid ?? true : true, // Mantieni il valore esistente in edit, sempre true in creazione
       }
 
@@ -283,7 +288,7 @@ export function CommesseActionDialog({
                     <FormLabel>Cliente Diretto</FormLabel>
                     <FormControl>
                       <AziendaCombobox
-                        value={field.value}
+                        value={field.value as number | null | undefined}
                         onValueChange={field.onChange}
                         placeholder='Seleziona cliente diretto...'
                       />
@@ -300,7 +305,7 @@ export function CommesseActionDialog({
                     <FormLabel>Cliente Fatturazione</FormLabel>
                     <FormControl>
                       <AziendaCombobox
-                        value={field.value}
+                        value={field.value as number | null | undefined}
                         onValueChange={field.onChange}
                         placeholder='Seleziona cliente fatturazione...'
                       />
@@ -620,9 +625,11 @@ export function CommesseActionDialog({
                         type='number'
                         step='0.5'
                         min='0'
-                        {...field}
-                        value={field.value ?? ''}
-                        onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : 0)}
+                        value={typeof field.value === 'number' ? field.value : (field.value ?? '')}
+                        onChange={(e) => {
+                          const val = e.target.value
+                          field.onChange(val ? (isNaN(parseFloat(val)) ? 0 : parseFloat(val)) : 0)
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
@@ -640,9 +647,11 @@ export function CommesseActionDialog({
                         type='number'
                         step='0.01'
                         min='0'
-                        {...field}
-                        value={field.value ?? ''}
-                        onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : 0)}
+                        value={typeof field.value === 'number' ? field.value : (field.value ?? '')}
+                        onChange={(e) => {
+                          const val = e.target.value
+                          field.onChange(val ? (isNaN(parseFloat(val)) ? 0 : parseFloat(val)) : 0)
+                        }}
                       />
                     </FormControl>
                     <FormMessage />

@@ -63,8 +63,6 @@ export function AziendeTable({ data, search, navigate }: DataTableProps) {
     columnFilters: [
         { columnId: 'ragione_sociale', searchKey: 'ragione_sociale', type: 'string' },
         { columnId: 'piva_cf', searchKey: 'piva_cf', type: 'string' },
-        { columnId: 'is_customer', searchKey: 'is_customer', type: 'boolean' },
-        { columnId: 'is_supplier', searchKey: 'is_supplier', type: 'boolean' },
         { columnId: 'tipologia', searchKey: 'tipologia', type: 'array' },
         { columnId: 'city', searchKey: 'city', type: 'array' },
         { columnId: 'province', searchKey: 'province', type: 'array' },

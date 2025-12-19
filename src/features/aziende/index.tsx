@@ -10,7 +10,6 @@ import { ConfigDrawer } from '@/components/config-drawer'
 import { AziendeProvider } from './components/aziende-provider'
 import { AziendeDialogs } from './components/aziende-dialogs'
 import { AziendeTable } from './components/aziende-table'
-import { aziendeColumns } from './components/aziende-columns'
 import { AziendePrimaryButtons } from './components/aziende-primary-buttons'
 
 const route = getRouteApi('/_authenticated/aziende/')
@@ -60,7 +59,6 @@ function AziendeContent() {
           <AziendePrimaryButtons />
         </div>
         <AziendeTable 
-          columns={aziendeColumns} 
           data={aziende || []} 
           search={search}
           navigate={navigate}

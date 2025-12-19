@@ -1,6 +1,5 @@
 'use client'
 
-import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
@@ -27,7 +26,10 @@ import {
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
-import { aziendaSchema, Azienda } from '../data/schema'
+import { aziendaSchema, type Azienda } from '../data/schema'
+import type { z } from 'zod'
+
+type AziendaFormData = z.input<typeof aziendaSchema>
 
 interface AziendeActionDialogProps {
   open: boolean
@@ -43,35 +45,45 @@ export function AziendeActionDialog({
   const isEdit = !!currentRow
   const queryClient = useQueryClient()
 
-  const form = useForm<Azienda>({
+  const form = useForm<AziendaFormData>({
     resolver: zodResolver(aziendaSchema),
-    defaultValues: currentRow || {
-      ragione_sociale: '',
-      description: '',
-      partita_iva: '',
-      codice_fiscale: '',
-      address: '',
-      cap: '',
-      city: '',
-      province: '',
-      country: '',
-      is_active: true,
-      is_customer: false,
-      is_supplier: false,
-    },
+    defaultValues: currentRow
+      ? {
+          ...currentRow,
+          is_active: currentRow.is_active ?? true,
+          is_customer: currentRow.is_customer ?? false,
+          is_supplier: currentRow.is_supplier ?? false,
+        }
+      : {
+          ragione_sociale: '',
+          description: null,
+          partita_iva: null,
+          codice_fiscale: null,
+          address: null,
+          cap: null,
+          city: null,
+          province: null,
+          country: null,
+          is_active: true,
+          is_customer: false,
+          is_supplier: false,
+        },
   })
 
-  async function onSubmit(data: Azienda) {
+  async function onSubmit(data: AziendaFormData) {
     try {
+      // Parse through schema to apply defaults
+      const parsedData = aziendaSchema.parse(data)
+      
       if (isEdit) {
         const { error } = await supabase
           .from('companies')
-          .update(data)
-          .eq('id', currentRow.id)
+          .update(parsedData)
+          .eq('id', currentRow!.id)
         if (error) throw error
         toast.success('Azienda aggiornata con successo')
       } else {
-        const { error } = await supabase.from('companies').insert(data)
+        const { error } = await supabase.from('companies').insert(parsedData)
         if (error) throw error
         toast.success('Azienda creata con successo')
       }

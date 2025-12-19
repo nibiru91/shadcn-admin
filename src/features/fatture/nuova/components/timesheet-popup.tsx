@@ -85,7 +85,11 @@ async function fetchTimesheet(idCommessa: number) {
     .order('giorno', { ascending: false, nullsFirst: false })
 
   if (error) throw new Error(error.message)
-  return (data || []) as TimesheetRecord[]
+  // Handle the case where user_id might be an array or object
+  return (data || []).map((item: any) => ({
+    ...item,
+    user_id: Array.isArray(item.user_id) ? item.user_id[0] || { id: 0, name: null, surname: null } : item.user_id || { id: 0, name: null, surname: null }
+  })) as TimesheetRecord[]
 }
 
 type TimesheetPopupProps = {

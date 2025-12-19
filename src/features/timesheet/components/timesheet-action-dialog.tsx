@@ -33,6 +33,9 @@ import { DatePicker } from '@/components/date-picker'
 import { timesheetSchema, Timesheet } from '../data/schema'
 import { UserCombobox } from './user-combobox'
 import { CommessaCombobox } from './commessa-combobox'
+import type { z } from 'zod'
+
+type TimesheetFormData = z.input<typeof timesheetSchema>
 
 interface TimesheetActionDialogProps {
   open: boolean
@@ -48,7 +51,7 @@ export function TimesheetActionDialog({
   const isEdit = !!currentRow
   const queryClient = useQueryClient()
 
-  const form = useForm<Timesheet>({
+  const form = useForm<TimesheetFormData>({
     resolver: zodResolver(timesheetSchema),
     defaultValues: currentRow
       ? {
@@ -122,10 +125,13 @@ export function TimesheetActionDialog({
     }
   }, [currentRow, form, open])
 
-  async function onSubmit(data: Timesheet) {
+  async function onSubmit(data: TimesheetFormData) {
     try {
+      // Parse through schema to apply defaults
+      const parsedData = timesheetSchema.parse(data)
+      
       const submitData = {
-        ...data,
+        ...parsedData,
         is_valid: isEdit ? currentRow?.is_valid ?? true : true,
       }
 

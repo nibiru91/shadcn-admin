@@ -17,11 +17,10 @@ type DataTableViewOptionsProps<TData> = {
 export function DataTableViewOptions<TData>({
   table,
 }: DataTableViewOptionsProps<TData>) {
-  const getLabel = (column: Table<TData>['getAllColumns'][number]) => {
+  const getLabel = (column: ReturnType<Table<TData>['getAllColumns']>[number]) => {
     const header = column.columnDef.header
     if (typeof header === 'string') return header
-    if (typeof column.columnDef.meta === 'object' && 'label' in (column.columnDef.meta ?? {})) {
-      // @ts-expect-error meta label runtime
+    if (typeof column.columnDef.meta === 'object' && column.columnDef.meta && 'label' in column.columnDef.meta) {
       return column.columnDef.meta.label || column.id
     }
     return column.id
