@@ -287,15 +287,22 @@ export function GanttChart() {
                     paddingLeft: `${12 + depth * 16}px`, // Indentazione basata sulla profondità
                   }}
                 >
-                  <span className='truncate font-medium'>{task.nome}</span>
+                  <span className='truncate font-medium flex-1'>{task.nome}</span>
                   {isParent && (
-                    <span className='ml-2 flex items-center text-muted-foreground'>
+                    <button
+                      type='button'
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleIconClick(task.id)
+                      }}
+                      className='ml-2 flex items-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer rounded p-0.5 hover:bg-muted/50'
+                    >
                       {task.collapsed ? (
                         <ChevronRight className='h-3 w-3' />
                       ) : (
                         <ChevronDown className='h-3 w-3' />
                       )}
-                    </span>
+                    </button>
                   )}
                 </div>
               )
