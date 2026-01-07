@@ -191,14 +191,9 @@ export function GanttChart() {
     const task = visibleTasks.find((t) => t.id === taskId)
     if (!task) return
 
-    // Se è un task padre, toggle collapse
-    if (hasChildren(taskId)) {
-      toggleTaskCollapse(taskId)
-    } else {
-      // Altrimenti apri il modal di modifica
-      setSelectedTask(taskId)
-      openEditModal(taskId)
-    }
+    // Apri sempre il modal di modifica (sia per task padre che per task figlio)
+    setSelectedTask(taskId)
+    openEditModal(taskId)
   }
 
   const handleIconClick = (taskId: string) => {
@@ -329,6 +324,7 @@ export function GanttChart() {
               <TaskBar
                 key={task.id}
                 task={task}
+                allTasks={tasks}
                 rangeStart={dateRange.start}
                 rangeEnd={dateRange.end}
                 rowIndex={index}

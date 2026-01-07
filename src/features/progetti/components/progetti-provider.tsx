@@ -56,6 +56,27 @@ function updateParentDatesRecursively(
   return updatedTasks
 }
 
+// Funzione helper per aggiornare i colori dei figli diretti che non sono padri
+function updateChildrenColors(
+  parentId: string,
+  parentColor: NonNullable<Task['colore']> | null,
+  allTasks: Task[]
+): Task[] {
+  return allTasks.map((task) => {
+    // Se è un figlio diretto e non è un padre, eredita il colore del padre
+    if (task.task_padre_id === parentId) {
+      const isChildParent = allTasks.some((t) => t.task_padre_id === task.id)
+      if (!isChildParent) {
+        return {
+          ...task,
+          colore: parentColor,
+        }
+      }
+    }
+    return task
+  })
+}
+
 interface ProgettiState {
   tasks: Task[]
   selectedTaskId: string | null
@@ -105,6 +126,7 @@ export const useProgettiStore = create<ProgettiState>((set, get) => ({
       nome: taskData.nome,
       descrizione: taskData.descrizione ?? null,
       priorità: taskData.priorità,
+      colore: taskData.colore ?? null,
       data_inizio: taskData.data_inizio as Date,
       data_fine: taskData.data_fine as Date,
       ore_previste: taskData.ore_previste ?? null,
@@ -141,11 +163,13 @@ export const useProgettiStore = create<ProgettiState>((set, get) => ({
     }
 
     const oldTask = tasks[taskIndex]
+    const colorChanged = oldTask.colore !== (taskData.colore ?? null)
     const updatedTask: Task = {
       ...oldTask,
       nome: taskData.nome,
       descrizione: taskData.descrizione ?? null,
       priorità: taskData.priorità,
+      colore: taskData.colore ?? null,
       data_inizio: taskData.data_inizio as Date,
       data_fine: taskData.data_fine as Date,
       ore_previste: taskData.ore_previste ?? null,
@@ -179,6 +203,14 @@ export const useProgettiStore = create<ProgettiState>((set, get) => ({
       updatedTasks = updateParentDatesRecursively(updatedTask.task_padre_id, updatedTasks, calculateParentDates)
     }
 
+    // Se il colore è cambiato e questo task è un padre, aggiorna i colori dei figli diretti che non sono padri
+    if (colorChanged) {
+      const isParent = updatedTasks.some((t) => t.task_padre_id === updatedTask.id)
+      if (isParent) {
+        updatedTasks = updateChildrenColors(updatedTask.id, updatedTask.colore, updatedTasks)
+      }
+    }
+
     set({ tasks: updatedTasks })
     saveTasksToStorage(updatedTasks)
     return updatedTask
@@ -193,11 +225,13 @@ export const useProgettiStore = create<ProgettiState>((set, get) => ({
     }
 
     const oldTask = tasks[taskIndex]
+    const colorChanged = oldTask.colore !== (taskData.colore ?? null)
     const updatedTask: Task = {
       ...oldTask,
       nome: taskData.nome,
       descrizione: taskData.descrizione ?? null,
       priorità: taskData.priorità,
+      colore: taskData.colore ?? null,
       // Non aggiornare le date - vengono gestite separatamente
       ore_previste: taskData.ore_previste ?? null,
       task_padre_id: taskData.task_padre_id ?? null,
@@ -220,6 +254,14 @@ export const useProgettiStore = create<ProgettiState>((set, get) => ({
     // Se è un task figlio, aggiorna le date del padre e tutti i padri nella gerarchia
     if (updatedTask.task_padre_id) {
       updatedTasks = updateParentDatesRecursively(updatedTask.task_padre_id, updatedTasks, calculateParentDates)
+    }
+
+    // Se il colore è cambiato e questo task è un padre, aggiorna i colori dei figli diretti che non sono padri
+    if (colorChanged) {
+      const isParent = updatedTasks.some((t) => t.task_padre_id === updatedTask.id)
+      if (isParent) {
+        updatedTasks = updateChildrenColors(updatedTask.id, updatedTask.colore, updatedTasks)
+      }
     }
 
     set({ tasks: updatedTasks })

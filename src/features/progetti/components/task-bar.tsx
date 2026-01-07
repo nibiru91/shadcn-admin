@@ -3,9 +3,11 @@ import { ChevronDown, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Task, Priorita } from '../data/schema'
 import { calculateDatePosition, calculateTaskWidth } from '../utils/dates'
+import { colorMap, priorityColors } from '../utils/colors'
 
 interface TaskBarProps {
   task: Task
+  allTasks: Task[]
   rangeStart: Date
   rangeEnd: Date
   rowIndex: number
@@ -15,22 +17,28 @@ interface TaskBarProps {
   onIconClick?: (e: React.MouseEvent) => void
 }
 
-const priorityColors: Record<Priorita, string> = {
-  bassa: 'bg-blue-500/90 hover:bg-blue-600 dark:bg-blue-600/90 dark:hover:bg-blue-700',
-  media: 'bg-yellow-500/90 hover:bg-yellow-600 dark:bg-yellow-600/90 dark:hover:bg-yellow-700',
-  alta: 'bg-orange-500/90 hover:bg-orange-600 dark:bg-orange-600/90 dark:hover:bg-orange-700',
-  critica: 'bg-red-500/90 hover:bg-red-600 dark:bg-red-600/90 dark:hover:bg-red-700',
-}
-
-const priorityBorders: Record<Priorita, string> = {
-  bassa: 'border-blue-600 dark:border-blue-500',
-  media: 'border-yellow-600 dark:border-yellow-500',
-  alta: 'border-orange-600 dark:border-orange-500',
-  critica: 'border-red-600 dark:border-red-500',
+// Funzione helper per ottenere il colore ereditato di un task
+function getTaskColor(task: Task, allTasks: Task[]): { bg: string; border: string } | null {
+  // Se il task ha un colore diretto, usalo
+  if (task.colore) {
+    return colorMap[task.colore]
+  }
+  
+  // Altrimenti, se ha un padre, eredita il colore del padre (ricorsivamente)
+  if (task.task_padre_id) {
+    const parent = allTasks.find((t) => t.id === task.task_padre_id)
+    if (parent) {
+      return getTaskColor(parent, allTasks)
+    }
+  }
+  
+  // Se non ha colore né padre, usa il colore basato sulla priorità
+  return null
 }
 
 export function TaskBar({
   task,
+  allTasks,
   rangeStart,
   rangeEnd,
   rowIndex,
@@ -64,6 +72,10 @@ export function TaskBar({
 
   const top = rowIndex * rowHeight + rowHeight / 2 - 12
 
+  // Ottieni il colore ereditato o usa quello della priorità
+  const taskColor = getTaskColor(task, allTasks)
+  const colorClasses = taskColor || priorityColors[task.priorità]
+
   return (
     <div
       ref={setNodeRef}
@@ -79,8 +91,8 @@ export function TaskBar({
       }}
       className={cn(
         'group cursor-move rounded-md border-2 transition-all shadow-sm',
-        priorityColors[task.priorità],
-        priorityBorders[task.priorità],
+        colorClasses.bg,
+        colorClasses.border,
         isDragging && 'opacity-50 shadow-lg scale-105',
         isParent && 'font-semibold ring-2 ring-offset-1',
         !isDragging && 'hover:shadow-md'

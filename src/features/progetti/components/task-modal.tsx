@@ -43,11 +43,12 @@ import {
 } from '@/components/ui/alert-dialog'
 import { DatePicker } from '@/components/date-picker'
 import { useProgettiStore } from './progetti-provider'
-import { taskFormSchema, type TaskFormData, type Priorita } from '../data/schema'
+import { taskFormSchema, type TaskFormData, type Priorita, type Colore } from '../data/schema'
 import { validateDependencies, validateTaskDependenciesOnMove, getDependentTasks } from '../utils/dependencies'
 import { DependencyErrorDialog } from './dependency-error-dialog'
 import { DependencyConfirmDialog } from './dependency-confirm-dialog'
 import { differenceInDays, addDays, isBefore } from 'date-fns'
+import { colorOptions } from '../utils/colors'
 import type { Task } from '../data/schema'
 
 const prioritaOptions: { value: Priorita; label: string }[] = [
@@ -75,6 +76,10 @@ export function TaskModal() {
 
   const currentTask = selectedTaskId ? getTaskById(selectedTaskId) : null
   const isEdit = modalMode === 'edit' && !!currentTask
+  
+  // Verifica se il task corrente è un padre
+  const isParent = currentTask ? tasks.some((t) => t.task_padre_id === currentTask.id) : false
+  
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [dependencyError, setDependencyError] = useState<{
     task: Task
@@ -138,6 +143,7 @@ export function TaskModal() {
       nome: '',
       descrizione: null,
       priorità: 'media',
+      colore: null,
       data_inizio: new Date(),
       data_fine: new Date(),
       ore_previste: null,
@@ -152,6 +158,7 @@ export function TaskModal() {
         nome: currentTask.nome,
         descrizione: currentTask.descrizione || null,
         priorità: currentTask.priorità,
+        colore: currentTask.colore || null,
         data_inizio: currentTask.data_inizio,
         data_fine: currentTask.data_fine,
         ore_previste: currentTask.ore_previste || null,
@@ -163,6 +170,7 @@ export function TaskModal() {
         nome: '',
         descrizione: null,
         priorità: 'media',
+        colore: null,
         data_inizio: new Date(),
         data_fine: new Date(),
         ore_previste: null,
@@ -174,6 +182,26 @@ export function TaskModal() {
 
   const onSubmit = async (data: TaskFormData) => {
     try {
+      // Se è un task padre, aggiorna solo nome, descrizione e colore (le date vengono calcolate dai figli)
+      if (isEdit && currentTask && isParent) {
+        const updated = updateTaskFields(currentTask.id, {
+          nome: data.nome,
+          descrizione: data.descrizione,
+          priorità: currentTask.priorità, // Mantieni la priorità esistente
+          colore: data.colore,
+          ore_previste: currentTask.ore_previste, // Mantieni le ore previste esistenti
+          task_padre_id: currentTask.task_padre_id, // Mantieni il padre esistente
+          dipendenze: currentTask.dipendenze, // Mantieni le dipendenze esistenti
+        })
+        if (updated) {
+          toast.success('Task aggiornato con successo')
+          closeModal()
+        } else {
+          toast.error('Errore nell\'aggiornamento del task')
+        }
+        return
+      }
+
       const newStartDate = data.data_inizio as Date
       const newEndDate = data.data_fine as Date
 
@@ -190,6 +218,7 @@ export function TaskModal() {
             nome: data.nome,
             descrizione: data.descrizione ?? null,
             priorità: data.priorità,
+            colore: data.colore ?? null,
             data_inizio: newStartDate,
             data_fine: newEndDate,
             ore_previste: data.ore_previste ?? null,
@@ -408,6 +437,42 @@ export function TaskModal() {
                 )}
               />
 
+              {isParent && (
+                <FormField
+                  control={form.control}
+                  name='colore'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Colore</FormLabel>
+                      <Select
+                        onValueChange={(value) => field.onChange(value === 'none' ? null : value)}
+                        value={field.value || 'none'}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder='Seleziona colore' />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value='none'>Nessun colore</SelectItem>
+                          {colorOptions.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormDescription>
+                        Il colore verrà ereditato da tutti i figli diretti che non sono a loro volta padri
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
+              {!isParent && (
+                <>
               <div className='grid grid-cols-2 gap-4'>
                 <FormField
                   control={form.control}
@@ -463,6 +528,38 @@ export function TaskModal() {
                   )}
                 />
               </div>
+
+              <FormField
+                control={form.control}
+                name='colore'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Colore</FormLabel>
+                    <Select
+                      onValueChange={(value) => field.onChange(value === 'none' ? null : value)}
+                      value={field.value || 'none'}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder='Seleziona colore' />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value='none'>Nessun colore</SelectItem>
+                        {colorOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>
+                      Se non selezionato, erediterà il colore del padre (se presente)
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <div className='grid grid-cols-2 gap-4'>
                 <FormField
@@ -593,7 +690,8 @@ export function TaskModal() {
                   </FormItem>
                 )}
               />
-
+              </>
+              )}
               <DialogFooter>
                 {isEdit && (
                   <Button
