@@ -52,13 +52,6 @@ export function GanttChart() {
     [dateRange]
   )
   
-  // Filtra i task visibili in base al range di date visualizzato
-  const visibleTasks = useMemo(() => {
-    return allVisibleTasks.filter((task) =>
-      taskOverlapsRange(task.data_inizio, task.data_fine, dateRange.start, dateRange.end)
-    )
-  }, [allVisibleTasks, dateRange])
-  
   // Handler per navigazione settimanale
   const handlePreviousWeek = () => {
     setViewStartDate((prev) => subDays(prev, 7))
@@ -228,7 +221,19 @@ export function GanttChart() {
     ? visibleTasks.find((t) => t.id === activeTaskId)
     : null
 
-  // Raggruppa i task per riga (considerando la gerarchia)
+  // Filtra i task visibili in base al range di date visualizzato (solo per rendering barre)
+  const visibleTasks = useMemo(() => {
+    return allVisibleTasks.filter((task) =>
+      taskOverlapsRange(task.data_inizio, task.data_fine, dateRange.start, dateRange.end)
+    )
+  }, [allVisibleTasks, dateRange])
+  
+  // Set di task IDs che sono nel range (per filtrare le barre da renderizzare)
+  const visibleTaskIds = useMemo(() => {
+    return new Set(visibleTasks.map((t) => t.id))
+  }, [visibleTasks])
+
+  // Raggruppa TUTTI i task per riga (considerando la gerarchia) - per la colonna sinistra
   const taskRows = useMemo(() => {
     const rows: Array<{ task: Task; index: number; depth: number }> = []
     const processed = new Set<string>()
@@ -240,16 +245,18 @@ export function GanttChart() {
       rows.push({ task, index: rows.length, depth })
 
       if (!task.collapsed) {
-        const children = visibleTasks.filter((t) => t.task_padre_id === task.id)
+        // Usa allVisibleTasks per la gerarchia completa nella colonna sinistra
+        const children = allVisibleTasks.filter((t) => t.task_padre_id === task.id)
         children.forEach((child) => addTaskToRow(child, depth + 1))
       }
     }
 
-    const rootTasks = visibleTasks.filter((t) => !t.task_padre_id)
+    // Usa allVisibleTasks per mostrare tutti i task nella colonna sinistra
+    const rootTasks = allVisibleTasks.filter((t) => !t.task_padre_id)
     rootTasks.forEach((task) => addTaskToRow(task))
 
     return rows
-  }, [visibleTasks])
+  }, [allVisibleTasks])
 
   return (
     <DndContext
@@ -389,32 +396,34 @@ export function GanttChart() {
               ))}
             </div>
 
-            {/* Dependency Arrows */}
+            {/* Dependency Arrows - Solo per task nel range */}
             <DependencyArrows
               tasks={visibleTasks}
-              taskRows={taskRows}
+              taskRows={taskRows.filter(({ task }) => visibleTaskIds.has(task.id))}
               containerId="gantt-dependency-container"
             />
 
-            {/* Task Bars */}
-            {taskRows.map(({ task, index }) => {
-              const isParent = hasChildren(task.id)
-              return (
-                <TaskBar
-                  key={task.id}
-                  task={task}
-                  allTasks={tasks}
-                  visibleTasks={visibleTasks}
-                  rangeStart={dateRange.start}
-                  rangeEnd={dateRange.end}
-                  rowIndex={index}
-                  rowHeight={ROW_HEIGHT}
-                  isParent={isParent}
-                  onClick={() => handleTaskClick(task.id)}
-                  onIconClick={() => handleIconClick(task.id)}
-                />
-              )
-            })}
+            {/* Task Bars - Renderizza solo i task che sono nel range visualizzato */}
+            {taskRows
+              .filter(({ task }) => visibleTaskIds.has(task.id))
+              .map(({ task, index }) => {
+                const isParent = hasChildren(task.id)
+                return (
+                  <TaskBar
+                    key={task.id}
+                    task={task}
+                    allTasks={tasks}
+                    visibleTasks={visibleTasks}
+                    rangeStart={dateRange.start}
+                    rangeEnd={dateRange.end}
+                    rowIndex={index}
+                    rowHeight={ROW_HEIGHT}
+                    isParent={isParent}
+                    onClick={() => handleTaskClick(task.id)}
+                    onIconClick={() => handleIconClick(task.id)}
+                  />
+                )
+              })}
           </div>
         </div>
 
