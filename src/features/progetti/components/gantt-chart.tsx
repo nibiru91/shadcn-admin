@@ -14,7 +14,7 @@ import { useProgettiStore } from './progetti-provider'
 import { getDateRange, generateTimelineDates, formatTimelineDate } from '../utils/dates'
 import { getAffectedTasks } from '../utils/dependencies'
 import { TaskBar } from './task-bar'
-import { DependencyArrow } from './dependency-arrow'
+import { DependencyArrows } from './dependency-arrows'
 import { DependencyConfirmDialog } from './dependency-confirm-dialog'
 import { DependencyErrorDialog } from './dependency-error-dialog'
 import { validateTaskDependenciesOnMove, getDependentTasks } from '../utils/dependencies'
@@ -290,32 +290,11 @@ export function GanttChart() {
           </div>
 
           {/* Dependency Arrows */}
-          {visibleTasks.map((task) => {
-            if (task.dipendenze.length === 0) return null
-
-            return task.dipendenze.map((dependencyId) => {
-              const dependencyTask = visibleTasks.find((t) => t.id === dependencyId)
-              if (!dependencyTask) return null
-
-              const fromRowIndex = taskRows.findIndex((r) => r.task.id === dependencyTask.id)
-              const toRowIndex = taskRows.findIndex((r) => r.task.id === task.id)
-
-              if (fromRowIndex === -1 || toRowIndex === -1) return null
-
-              return (
-                <DependencyArrow
-                  key={`${dependencyId}-${task.id}`}
-                  fromTask={dependencyTask}
-                  toTask={task}
-                  rangeStart={dateRange.start}
-                  rangeEnd={dateRange.end}
-                  rowHeight={ROW_HEIGHT}
-                  fromRowIndex={fromRowIndex}
-                  toRowIndex={toRowIndex}
-                />
-              )
-            })
-          })}
+          <DependencyArrows
+            tasks={visibleTasks}
+            taskRows={taskRows}
+            containerId="gantt-dependency-container"
+          />
 
           {/* Task Bars */}
           {taskRows.map(({ task, index }) => {
@@ -325,6 +304,7 @@ export function GanttChart() {
                 key={task.id}
                 task={task}
                 allTasks={tasks}
+                visibleTasks={visibleTasks}
                 rangeStart={dateRange.start}
                 rangeEnd={dateRange.end}
                 rowIndex={index}

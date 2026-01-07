@@ -8,6 +8,7 @@ import { colorMap, priorityColors } from '../utils/colors'
 interface TaskBarProps {
   task: Task
   allTasks: Task[]
+  visibleTasks: Task[]
   rangeStart: Date
   rangeEnd: Date
   rowIndex: number
@@ -39,6 +40,7 @@ function getTaskColor(task: Task, allTasks: Task[]): { bg: string; border: strin
 export function TaskBar({
   task,
   allTasks,
+  visibleTasks,
   rangeStart,
   rangeEnd,
   rowIndex,
@@ -77,49 +79,81 @@ export function TaskBar({
   const colorClasses = taskColor || priorityColors[task.priorità]
 
   return (
-    <div
-      ref={setNodeRef}
-      style={{
-        position: 'absolute',
-        left: `${left}%`,
-        top: `${top}px`,
-        width: `${width}%`,
-        minWidth: '20px',
-        height: '24px',
-        zIndex: isDragging ? 50 : 10,
-        ...style,
-      }}
-      className={cn(
-        'group cursor-move rounded-md border-2 transition-all shadow-sm',
-        colorClasses.bg,
-        colorClasses.border,
-        isDragging && 'opacity-50 shadow-lg scale-105',
-        isParent && 'font-semibold ring-2 ring-offset-1',
-        !isDragging && 'hover:shadow-md'
-      )}
-      onClick={onClick}
-      {...listeners}
-      {...attributes}
-    >
-      <div className='flex h-full items-center justify-between px-2 text-xs text-white'>
-        <span className='truncate font-medium'>{task.nome}</span>
-        {isParent && (
-          <div
-            className='ml-2 flex items-center cursor-pointer rounded p-0.5 hover:bg-white/20 transition-colors'
-            onClick={(e) => {
-              e.stopPropagation()
-              onIconClick?.(e)
-            }}
-          >
-            {task.collapsed ? (
-              <ChevronRight className='h-3 w-3 transition-transform hover:scale-110' />
-            ) : (
-              <ChevronDown className='h-3 w-3 transition-transform hover:scale-110' />
-            )}
-          </div>
+    <>
+      {/* Elementi di riferimento per d3.js */}
+      <div
+        id={`task-end-${task.id}`}
+        data-task-id={task.id}
+        data-task-end="true"
+        style={{
+          position: 'absolute',
+          left: `${left + width}%`,
+          top: `${top + 12}px`,
+          width: '1px',
+          height: '1px',
+          pointerEvents: 'none',
+          zIndex: 1,
+        }}
+      />
+      <div
+        id={`task-start-${task.id}`}
+        data-task-id={task.id}
+        data-task-start="true"
+        style={{
+          position: 'absolute',
+          left: `${left}%`,
+          top: `${top + 12}px`,
+          width: '1px',
+          height: '1px',
+          pointerEvents: 'none',
+          zIndex: 1,
+        }}
+      />
+      <div
+        ref={setNodeRef}
+        id={`task-${task.id}`}
+        style={{
+          position: 'absolute',
+          left: `${left}%`,
+          top: `${top}px`,
+          width: `${width}%`,
+          minWidth: '20px',
+          height: '24px',
+          zIndex: isDragging ? 50 : 10,
+          ...style,
+        }}
+        className={cn(
+          'group cursor-move rounded-md border-2 transition-all shadow-sm',
+          colorClasses.bg,
+          colorClasses.border,
+          isDragging && 'opacity-50 shadow-lg scale-105',
+          isParent && 'font-semibold ring-2 ring-offset-1',
+          !isDragging && 'hover:shadow-md'
         )}
+        onClick={onClick}
+        {...listeners}
+        {...attributes}
+      >
+        <div className='flex h-full items-center justify-between px-2 text-xs text-white'>
+          <span className='truncate font-medium'>{task.nome}</span>
+          {isParent && (
+            <div
+              className='ml-2 flex items-center cursor-pointer rounded p-0.5 hover:bg-white/20 transition-colors'
+              onClick={(e) => {
+                e.stopPropagation()
+                onIconClick?.(e)
+              }}
+            >
+              {task.collapsed ? (
+                <ChevronRight className='h-3 w-3 transition-transform hover:scale-110' />
+              ) : (
+                <ChevronDown className='h-3 w-3 transition-transform hover:scale-110' />
+              )}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   )
 }
 
