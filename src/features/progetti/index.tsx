@@ -32,7 +32,7 @@ export function Progetti() {
 
       <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
         <ProgettiHeader />
-        <div className='flex-1 rounded-lg border bg-card p-4'>
+        <div className='flex-1 rounded-lg border bg-card p-4 flex flex-col min-h-0'>
           <Suspense fallback={<div className='flex h-full items-center justify-center'>Caricamento Gantt Chart...</div>}>
             <GanttChart />
           </Suspense>

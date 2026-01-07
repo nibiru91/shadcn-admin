@@ -10,7 +10,7 @@ import {
   closestCenter,
 } from '@dnd-kit/core'
 import { differenceInDays, addDays, isBefore, startOfDay, subDays } from 'date-fns'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useProgettiStore } from './progetti-provider'
 import { getDateRange, generateTimelineDates, formatTimelineDate, isWeekend, taskOverlapsRange } from '../utils/dates'
@@ -230,14 +230,14 @@ export function GanttChart() {
 
   // Raggruppa i task per riga (considerando la gerarchia)
   const taskRows = useMemo(() => {
-    const rows: Array<{ task: Task; index: number }> = []
+    const rows: Array<{ task: Task; index: number; depth: number }> = []
     const processed = new Set<string>()
 
     const addTaskToRow = (task: Task, depth: number = 0) => {
       if (processed.has(task.id)) return
       processed.add(task.id)
 
-      rows.push({ task, index: rows.length })
+      rows.push({ task, index: rows.length, depth })
 
       if (!task.collapsed) {
         const children = visibleTasks.filter((t) => t.task_padre_id === task.id)
@@ -258,120 +258,164 @@ export function GanttChart() {
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className='relative w-full overflow-x-hidden gantt-container'>
-        {/* Controlli di navigazione */}
-        <div className='sticky top-0 z-30 flex items-center justify-between border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 py-2'>
-          <Button
-            variant='outline'
-            size='icon'
-            onClick={handlePreviousWeek}
-            className='h-8 w-8'
-          >
-            <ChevronLeft className='h-4 w-4' />
-          </Button>
-          <div className='text-sm font-medium'>
-            {formatTimelineDate(dateRange.start)} - {formatTimelineDate(dateRange.end)}
-          </div>
-          <Button
-            variant='outline'
-            size='icon'
-            onClick={handleNextWeek}
-            className='h-8 w-8'
-          >
-            <ChevronRight className='h-4 w-4' />
-          </Button>
-        </div>
-        
-        {/* Timeline */}
-        <div
-          className='sticky top-[48px] z-20 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60'
-          style={{ height: `${TIMELINE_HEIGHT}px` }}
-        >
-          <div className='relative h-full'>
-            {timelineDates.map((date, index) => {
-              const weekend = isWeekend(date)
+      <div className='flex h-full w-full overflow-x-hidden gantt-container'>
+        {/* Colonna sinistra - Nomi task */}
+        <div className='sticky left-0 z-10 w-[250px] flex-shrink-0 border-r border-border bg-background'>
+          {/* Header vuoto per allineamento con controlli e timeline */}
+          <div 
+            className='border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60'
+            style={{ height: `${48 + TIMELINE_HEIGHT}px` }}
+          />
+          
+          {/* Nomi task */}
+          <div className='relative'>
+            {taskRows.map(({ task, index, depth }) => {
+              const isParent = hasChildren(task.id)
               return (
                 <div
-                  key={index}
-                  className={`absolute top-0 h-full flex flex-col border-r border-border p-2 text-xs transition-colors hover:bg-muted/50 ${
-                    weekend ? 'bg-muted/50' : 'bg-muted/30'
-                  }`}
+                  key={task.id}
+                  className='flex items-center border-b border-border/30 px-3 text-sm'
                   style={{
-                    left: `${(index / timelineDates.length) * 100}%`,
-                    width: `${100 / timelineDates.length}%`,
+                    height: `${ROW_HEIGHT}px`,
+                    paddingLeft: `${12 + depth * 16}px`, // Indentazione basata sulla profondità
                   }}
                 >
-                  <div className='font-semibold'>{formatTimelineDate(date)}</div>
-                  <div className='text-muted-foreground text-[10px]'>
-                    {date.toLocaleDateString('it-IT', { weekday: 'short' })}
-                  </div>
+                  <span className='truncate font-medium'>{task.nome}</span>
+                  {isParent && (
+                    <span className='ml-2 flex items-center text-muted-foreground'>
+                      {task.collapsed ? (
+                        <ChevronRight className='h-3 w-3' />
+                      ) : (
+                        <ChevronDown className='h-3 w-3' />
+                      )}
+                    </span>
+                  )}
                 </div>
               )
             })}
           </div>
         </div>
 
-        {/* Task Area */}
-        <div
-          className='relative'
-          style={{
-            height: `${taskRows.length * ROW_HEIGHT}px`,
-            minHeight: '400px',
-          }}
-        >
-          {/* Grid lines */}
-          <div className='absolute inset-0'>
-            {timelineDates.map((date, index) => {
-              const weekend = isWeekend(date)
-              return (
+        {/* Colonna destra - Gantt Chart */}
+        <div className='flex-1 relative overflow-x-hidden'>
+          {/* Controlli di navigazione */}
+          <div className='sticky top-0 z-30 flex items-center justify-between border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 py-2'>
+            <Button
+              variant='outline'
+              size='icon'
+              onClick={handlePreviousWeek}
+              className='h-8 w-8'
+            >
+              <ChevronLeft className='h-4 w-4' />
+            </Button>
+            <div className='text-sm font-medium'>
+              {formatTimelineDate(dateRange.start)} - {formatTimelineDate(dateRange.end)}
+            </div>
+            <Button
+              variant='outline'
+              size='icon'
+              onClick={handleNextWeek}
+              className='h-8 w-8'
+            >
+              <ChevronRight className='h-4 w-4' />
+            </Button>
+          </div>
+          
+          {/* Timeline */}
+          <div
+            className='sticky top-[48px] z-20 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60'
+            style={{ height: `${TIMELINE_HEIGHT}px` }}
+          >
+            <div className='relative h-full'>
+              {timelineDates.map((date, index) => {
+                const weekend = isWeekend(date)
+                return (
+                  <div
+                    key={index}
+                    className={`absolute top-0 h-full flex flex-col border-r border-border p-2 text-xs transition-colors ${
+                      weekend 
+                        ? 'bg-muted/70 dark:bg-muted/60 hover:bg-muted/80' 
+                        : 'bg-muted/30 hover:bg-muted/50'
+                    }`}
+                    style={{
+                      left: `${(index / timelineDates.length) * 100}%`,
+                      width: `${100 / timelineDates.length}%`,
+                    }}
+                  >
+                    <div className='font-semibold'>{formatTimelineDate(date)}</div>
+                    <div className='text-muted-foreground text-[10px]'>
+                      {date.toLocaleDateString('it-IT', { weekday: 'short' })}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Task Area */}
+          <div
+            className='relative'
+            style={{
+              height: `${taskRows.length * ROW_HEIGHT}px`,
+              minHeight: '400px',
+            }}
+          >
+            {/* Grid lines */}
+            <div className='absolute inset-0'>
+              {timelineDates.map((date, index) => {
+                const weekend = isWeekend(date)
+                return (
+                  <div
+                    key={`vertical-${index}`}
+                    className={`absolute top-0 h-full border-r ${
+                      weekend 
+                        ? 'border-border/80 bg-muted/30 dark:bg-muted/25' 
+                        : 'border-border/50'
+                    }`}
+                    style={{
+                      left: `${(index / timelineDates.length) * 100}%`,
+                    }}
+                  />
+                )
+              })}
+              {taskRows.map((_, index) => (
                 <div
-                  key={`vertical-${index}`}
-                  className={`absolute top-0 h-full border-r ${
-                    weekend ? 'border-border/70 bg-muted/20' : 'border-border/50'
-                  }`}
+                  key={`horizontal-${index}`}
+                  className='absolute left-0 w-full border-b border-border/30'
                   style={{
-                    left: `${(index / timelineDates.length) * 100}%`,
+                    top: `${index * ROW_HEIGHT}px`,
                   }}
+                />
+              ))}
+            </div>
+
+            {/* Dependency Arrows */}
+            <DependencyArrows
+              tasks={visibleTasks}
+              taskRows={taskRows}
+              containerId="gantt-dependency-container"
+            />
+
+            {/* Task Bars */}
+            {taskRows.map(({ task, index }) => {
+              const isParent = hasChildren(task.id)
+              return (
+                <TaskBar
+                  key={task.id}
+                  task={task}
+                  allTasks={tasks}
+                  visibleTasks={visibleTasks}
+                  rangeStart={dateRange.start}
+                  rangeEnd={dateRange.end}
+                  rowIndex={index}
+                  rowHeight={ROW_HEIGHT}
+                  isParent={isParent}
+                  onClick={() => handleTaskClick(task.id)}
+                  onIconClick={() => handleIconClick(task.id)}
                 />
               )
             })}
-            {taskRows.map((_, index) => (
-              <div
-                key={`horizontal-${index}`}
-                className='absolute left-0 w-full border-b border-border/30'
-                style={{
-                  top: `${index * ROW_HEIGHT}px`,
-                }}
-              />
-            ))}
           </div>
-
-          {/* Dependency Arrows */}
-          <DependencyArrows
-            tasks={visibleTasks}
-            taskRows={taskRows}
-            containerId="gantt-dependency-container"
-          />
-
-          {/* Task Bars */}
-          {taskRows.map(({ task, index }) => {
-            const isParent = hasChildren(task.id)
-            return (
-              <TaskBar
-                key={task.id}
-                task={task}
-                allTasks={tasks}
-                visibleTasks={visibleTasks}
-                rangeStart={dateRange.start}
-                rangeEnd={dateRange.end}
-                rowIndex={index}
-                rowHeight={ROW_HEIGHT}
-                isParent={isParent}
-                onClick={() => handleTaskClick(task.id)}
-                onIconClick={() => handleIconClick(task.id)}
-              />
-            )
-          })}
         </div>
 
         <DragOverlay>
