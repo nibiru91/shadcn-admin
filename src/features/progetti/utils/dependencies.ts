@@ -1,4 +1,4 @@
-import { addDays, isAfter, isBefore, differenceInDays } from 'date-fns'
+import { addDays, isAfter, isBefore, differenceInDays, startOfDay, isSameDay } from 'date-fns'
 import type { Task } from '../data/schema'
 
 /**
@@ -20,9 +20,16 @@ export function validateDependencies(
     }
 
     // Verifica che data_inizio >= data_fine(dipendenza) + 1 giorno
-    const minStartDate = addDays(dependencyTask.data_fine, 1)
+    // Normalizza le date all'inizio del giorno per confronti accurati
+    const dependencyEndNormalized = startOfDay(dependencyTask.data_fine)
+    const minStartDate = startOfDay(addDays(dependencyEndNormalized, 1))
+    const taskStartNormalized = startOfDay(task.data_inizio)
     
-    if (isBefore(task.data_inizio, minStartDate)) {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/df847be0-25f0-4c0b-ba0a-7bc1fdb8a606',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dependencies.ts:22',message:'validateDependencies check',data:{taskId:task.id,taskName:task.nome,dependencyId:dependencyTask.id,dependencyName:dependencyTask.nome,dependencyEnd:dependencyTask.data_fine.toISOString(),dependencyEndNormalized:dependencyEndNormalized.toISOString(),minStartDate:minStartDate.toISOString(),taskStart:task.data_inizio.toISOString(),taskStartNormalized:taskStartNormalized.toISOString(),isBefore:isBefore(taskStartNormalized,minStartDate),isSameDay:isSameDay(taskStartNormalized,minStartDate)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
+    
+    if (isBefore(taskStartNormalized, minStartDate)) {
       errors.push(
         `Il task "${task.nome}" deve iniziare almeno il ${minStartDate.toLocaleDateString('it-IT')} ` +
         `(1 giorno dopo la fine di "${dependencyTask.nome}")`
@@ -82,9 +89,12 @@ export function getAffectedTasks(
 
   for (const dependent of dependentTasks) {
     // Verifica se lo spostamento viola la dipendenza
-    const minStartDate = addDays(newEndDate, 1)
+    // Normalizza le date all'inizio del giorno per confronti accurati
+    const newEndNormalized = startOfDay(newEndDate)
+    const minStartDate = startOfDay(addDays(newEndNormalized, 1))
+    const dependentStartNormalized = startOfDay(dependent.data_inizio)
     
-    if (isBefore(dependent.data_inizio, minStartDate)) {
+    if (isBefore(dependentStartNormalized, minStartDate)) {
       affected.push(dependent)
     }
   }
@@ -198,8 +208,16 @@ export function validateTaskDependenciesOnMove(
     return { valid: true, minStartDate: null, dependencyTasks: [] }
   }
 
-  const minStartDate = addDays(maxEndDate, 1)
-  const valid = !isBefore(newStartDate, minStartDate)
+  // Normalizza le date all'inizio del giorno per confronti accurati
+  const maxEndNormalized = startOfDay(maxEndDate)
+  const minStartDate = startOfDay(addDays(maxEndNormalized, 1))
+  const newStartNormalized = startOfDay(newStartDate)
+  
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/df847be0-25f0-4c0b-ba0a-7bc1fdb8a606',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dependencies.ts:201',message:'validateTaskDependenciesOnMove check',data:{taskId:task.id,taskName:task.nome,maxEndDate:maxEndDate.toISOString(),maxEndNormalized:maxEndNormalized.toISOString(),minStartDate:minStartDate.toISOString(),newStartDate:newStartDate.toISOString(),newStartNormalized:newStartNormalized.toISOString(),isBefore:isBefore(newStartNormalized,minStartDate),isSameDay:isSameDay(newStartNormalized,minStartDate),valid:!isBefore(newStartNormalized,minStartDate)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+  // #endregion
+  
+  const valid = !isBefore(newStartNormalized, minStartDate)
 
   return {
     valid,
