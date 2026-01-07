@@ -9,35 +9,57 @@ import {
   subDays,
   startOfDay,
   differenceInDays,
+  isBefore,
+  isAfter,
 } from 'date-fns'
 import { it } from 'date-fns/locale'
 
 /**
  * Ottiene l'intervallo di date per visualizzare il GanttChart
- * Basato su tutti i task presenti
+ * Sempre 30 giorni consecutivi a partire da viewStartDate (default: data odierna)
  */
-export function getDateRange(tasks: Array<{ data_inizio: Date; data_fine: Date }>): {
+export function getDateRange(viewStartDate?: Date): {
   start: Date
   end: Date
 } {
-  if (tasks.length === 0) {
-    // Se non ci sono task, mostra il mese corrente
-    const now = new Date()
-    return {
-      start: startOfMonth(now),
-      end: endOfMonth(now),
-    }
-  }
-
-  const allDates = tasks.flatMap((task) => [task.data_inizio, task.data_fine])
-  const minDate = new Date(Math.min(...allDates.map((d) => d.getTime())))
-  const maxDate = new Date(Math.max(...allDates.map((d) => d.getTime())))
-
-  // Estendi di una settimana prima e dopo per migliore visualizzazione
+  const start = startOfDay(viewStartDate || new Date())
+  const end = addDays(start, 29) // 30 giorni inclusivi (start + 29 giorni = 30 giorni totali)
+  
   return {
-    start: startOfWeek(subDays(minDate, 7), { weekStartsOn: 1 }),
-    end: endOfWeek(addDays(maxDate, 7), { weekStartsOn: 1 }),
+    start,
+    end,
   }
+}
+
+/**
+ * Verifica se una data è un weekend (sabato o domenica)
+ */
+export function isWeekend(date: Date): boolean {
+  const day = date.getDay()
+  return day === 0 || day === 6 // Domenica (0) o Sabato (6)
+}
+
+/**
+ * Verifica se un task si sovrappone al range di date visualizzato
+ * Un task si sovrappone se: task.data_inizio <= range.end AND task.data_fine >= range.start
+ */
+export function taskOverlapsRange(
+  taskStart: Date,
+  taskEnd: Date,
+  rangeStart: Date,
+  rangeEnd: Date
+): boolean {
+  // Normalizza tutte le date all'inizio del giorno per confronti accurati
+  const normalizedTaskStart = startOfDay(taskStart)
+  const normalizedTaskEnd = startOfDay(taskEnd)
+  const normalizedRangeStart = startOfDay(rangeStart)
+  const normalizedRangeEnd = startOfDay(rangeEnd)
+  
+  // Un task si sovrappone se non è completamente prima o completamente dopo il range
+  return (
+    !isAfter(normalizedTaskStart, normalizedRangeEnd) &&
+    !isBefore(normalizedTaskEnd, normalizedRangeStart)
+  )
 }
 
 /**

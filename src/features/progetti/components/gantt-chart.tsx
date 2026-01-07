@@ -9,9 +9,11 @@ import {
   useSensors,
   closestCenter,
 } from '@dnd-kit/core'
-import { differenceInDays, addDays, isBefore } from 'date-fns'
+import { differenceInDays, addDays, isBefore, startOfDay, subDays } from 'date-fns'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { useProgettiStore } from './progetti-provider'
-import { getDateRange, generateTimelineDates, formatTimelineDate } from '../utils/dates'
+import { getDateRange, generateTimelineDates, formatTimelineDate, isWeekend, taskOverlapsRange } from '../utils/dates'
 import { getAffectedTasks } from '../utils/dependencies'
 import { TaskBar } from './task-bar'
 import { DependencyArrows } from './dependency-arrows'
@@ -33,17 +35,38 @@ export function GanttChart() {
   const setSelectedTask = useProgettiStore((state) => state.setSelectedTask)
   const openEditModal = useProgettiStore((state) => state.openEditModal)
 
-  const visibleTasks = getVisibleTasks()
+  const allVisibleTasks = getVisibleTasks()
+  
+  // Stato per la data di inizio della visualizzazione (default: oggi)
+  const [viewStartDate, setViewStartDate] = useState(() => startOfDay(new Date()))
   
   // Helper per verificare se un task ha figli (controlla tutti i task, non solo quelli visibili)
   const hasChildren = (taskId: string) => {
     return tasks.some((t) => t.task_padre_id === taskId)
   }
-  const dateRange = useMemo(() => getDateRange(visibleTasks), [visibleTasks])
+  
+  // Calcola sempre un range di 30 giorni a partire da viewStartDate
+  const dateRange = useMemo(() => getDateRange(viewStartDate), [viewStartDate])
   const timelineDates = useMemo(
     () => generateTimelineDates(dateRange.start, dateRange.end),
     [dateRange]
   )
+  
+  // Filtra i task visibili in base al range di date visualizzato
+  const visibleTasks = useMemo(() => {
+    return allVisibleTasks.filter((task) =>
+      taskOverlapsRange(task.data_inizio, task.data_fine, dateRange.start, dateRange.end)
+    )
+  }, [allVisibleTasks, dateRange])
+  
+  // Handler per navigazione settimanale
+  const handlePreviousWeek = () => {
+    setViewStartDate((prev) => subDays(prev, 7))
+  }
+  
+  const handleNextWeek = () => {
+    setViewStartDate((prev) => addDays(prev, 7))
+  }
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -235,28 +258,56 @@ export function GanttChart() {
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className='relative w-full overflow-x-auto gantt-container'>
+      <div className='relative w-full overflow-x-hidden gantt-container'>
+        {/* Controlli di navigazione */}
+        <div className='sticky top-0 z-30 flex items-center justify-between border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 py-2'>
+          <Button
+            variant='outline'
+            size='icon'
+            onClick={handlePreviousWeek}
+            className='h-8 w-8'
+          >
+            <ChevronLeft className='h-4 w-4' />
+          </Button>
+          <div className='text-sm font-medium'>
+            {formatTimelineDate(dateRange.start)} - {formatTimelineDate(dateRange.end)}
+          </div>
+          <Button
+            variant='outline'
+            size='icon'
+            onClick={handleNextWeek}
+            className='h-8 w-8'
+          >
+            <ChevronRight className='h-4 w-4' />
+          </Button>
+        </div>
+        
         {/* Timeline */}
         <div
-          className='sticky top-0 z-20 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60'
+          className='sticky top-[48px] z-20 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60'
           style={{ height: `${TIMELINE_HEIGHT}px` }}
         >
           <div className='relative h-full'>
-            {timelineDates.map((date, index) => (
-              <div
-                key={index}
-                className='absolute top-0 h-full flex flex-col border-r border-border bg-muted/30 p-2 text-xs transition-colors hover:bg-muted/50'
-                style={{
-                  left: `${(index / timelineDates.length) * 100}%`,
-                  width: `${100 / timelineDates.length}%`,
-                }}
-              >
-                <div className='font-semibold'>{formatTimelineDate(date)}</div>
-                <div className='text-muted-foreground text-[10px]'>
-                  {date.toLocaleDateString('it-IT', { weekday: 'short' })}
+            {timelineDates.map((date, index) => {
+              const weekend = isWeekend(date)
+              return (
+                <div
+                  key={index}
+                  className={`absolute top-0 h-full flex flex-col border-r border-border p-2 text-xs transition-colors hover:bg-muted/50 ${
+                    weekend ? 'bg-muted/50' : 'bg-muted/30'
+                  }`}
+                  style={{
+                    left: `${(index / timelineDates.length) * 100}%`,
+                    width: `${100 / timelineDates.length}%`,
+                  }}
+                >
+                  <div className='font-semibold'>{formatTimelineDate(date)}</div>
+                  <div className='text-muted-foreground text-[10px]'>
+                    {date.toLocaleDateString('it-IT', { weekday: 'short' })}
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
 
@@ -270,15 +321,20 @@ export function GanttChart() {
         >
           {/* Grid lines */}
           <div className='absolute inset-0'>
-            {timelineDates.map((_, index) => (
-              <div
-                key={`vertical-${index}`}
-                className='absolute top-0 h-full border-r border-border/50'
-                style={{
-                  left: `${(index / timelineDates.length) * 100}%`,
-                }}
-              />
-            ))}
+            {timelineDates.map((date, index) => {
+              const weekend = isWeekend(date)
+              return (
+                <div
+                  key={`vertical-${index}`}
+                  className={`absolute top-0 h-full border-r ${
+                    weekend ? 'border-border/70 bg-muted/20' : 'border-border/50'
+                  }`}
+                  style={{
+                    left: `${(index / timelineDates.length) * 100}%`,
+                  }}
+                />
+              )
+            })}
             {taskRows.map((_, index) => (
               <div
                 key={`horizontal-${index}`}
