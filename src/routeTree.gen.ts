@@ -26,6 +26,7 @@ import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedTimesheetIndexRouteImport } from './routes/_authenticated/timesheet/index'
 import { Route as AuthenticatedTasksIndexRouteImport } from './routes/_authenticated/tasks/index'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
+import { Route as AuthenticatedProgettiIndexRouteImport } from './routes/_authenticated/progetti/index'
 import { Route as AuthenticatedPianificazioneIndexRouteImport } from './routes/_authenticated/pianificazione/index'
 import { Route as AuthenticatedHelpCenterIndexRouteImport } from './routes/_authenticated/help-center/index'
 import { Route as AuthenticatedFerieIndexRouteImport } from './routes/_authenticated/ferie/index'
@@ -128,6 +129,12 @@ const AuthenticatedSettingsIndexRoute =
     id: '/',
     path: '/',
     getParentRoute: () => AuthenticatedSettingsRouteRoute,
+  } as any)
+const AuthenticatedProgettiIndexRoute =
+  AuthenticatedProgettiIndexRouteImport.update({
+    id: '/progetti/',
+    path: '/progetti/',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedPianificazioneIndexRoute =
   AuthenticatedPianificazioneIndexRouteImport.update({
@@ -243,6 +250,7 @@ export interface FileRoutesByFullPath {
   '/ferie': typeof AuthenticatedFerieIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
   '/pianificazione': typeof AuthenticatedPianificazioneIndexRoute
+  '/progetti': typeof AuthenticatedProgettiIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/tasks': typeof AuthenticatedTasksIndexRoute
   '/timesheet': typeof AuthenticatedTimesheetIndexRoute
@@ -275,6 +283,7 @@ export interface FileRoutesByTo {
   '/ferie': typeof AuthenticatedFerieIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
   '/pianificazione': typeof AuthenticatedPianificazioneIndexRoute
+  '/progetti': typeof AuthenticatedProgettiIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/tasks': typeof AuthenticatedTasksIndexRoute
   '/timesheet': typeof AuthenticatedTimesheetIndexRoute
@@ -310,6 +319,7 @@ export interface FileRoutesById {
   '/_authenticated/ferie/': typeof AuthenticatedFerieIndexRoute
   '/_authenticated/help-center/': typeof AuthenticatedHelpCenterIndexRoute
   '/_authenticated/pianificazione/': typeof AuthenticatedPianificazioneIndexRoute
+  '/_authenticated/progetti/': typeof AuthenticatedProgettiIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/tasks/': typeof AuthenticatedTasksIndexRoute
   '/_authenticated/timesheet/': typeof AuthenticatedTimesheetIndexRoute
@@ -345,6 +355,7 @@ export interface FileRouteTypes {
     | '/ferie'
     | '/help-center'
     | '/pianificazione'
+    | '/progetti'
     | '/settings/'
     | '/tasks'
     | '/timesheet'
@@ -377,6 +388,7 @@ export interface FileRouteTypes {
     | '/ferie'
     | '/help-center'
     | '/pianificazione'
+    | '/progetti'
     | '/settings'
     | '/tasks'
     | '/timesheet'
@@ -411,6 +423,7 @@ export interface FileRouteTypes {
     | '/_authenticated/ferie/'
     | '/_authenticated/help-center/'
     | '/_authenticated/pianificazione/'
+    | '/_authenticated/progetti/'
     | '/_authenticated/settings/'
     | '/_authenticated/tasks/'
     | '/_authenticated/timesheet/'
@@ -553,6 +566,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/settings/'
       preLoaderRoute: typeof AuthenticatedSettingsIndexRouteImport
       parentRoute: typeof AuthenticatedSettingsRouteRoute
+    }
+    '/_authenticated/progetti/': {
+      id: '/_authenticated/progetti/'
+      path: '/progetti'
+      fullPath: '/progetti'
+      preLoaderRoute: typeof AuthenticatedProgettiIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/pianificazione/': {
       id: '/_authenticated/pianificazione/'
@@ -697,6 +717,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFerieIndexRoute: typeof AuthenticatedFerieIndexRoute
   AuthenticatedHelpCenterIndexRoute: typeof AuthenticatedHelpCenterIndexRoute
   AuthenticatedPianificazioneIndexRoute: typeof AuthenticatedPianificazioneIndexRoute
+  AuthenticatedProgettiIndexRoute: typeof AuthenticatedProgettiIndexRoute
   AuthenticatedTasksIndexRoute: typeof AuthenticatedTasksIndexRoute
   AuthenticatedTimesheetIndexRoute: typeof AuthenticatedTimesheetIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
@@ -716,6 +737,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFerieIndexRoute: AuthenticatedFerieIndexRoute,
   AuthenticatedHelpCenterIndexRoute: AuthenticatedHelpCenterIndexRoute,
   AuthenticatedPianificazioneIndexRoute: AuthenticatedPianificazioneIndexRoute,
+  AuthenticatedProgettiIndexRoute: AuthenticatedProgettiIndexRoute,
   AuthenticatedTasksIndexRoute: AuthenticatedTasksIndexRoute,
   AuthenticatedTimesheetIndexRoute: AuthenticatedTimesheetIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,

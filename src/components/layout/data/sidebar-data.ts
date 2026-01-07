@@ -105,6 +105,11 @@ export const sidebarData: SidebarData = {
               url: `/ferie?anno=${new Date().getFullYear()}`,
               icon: Calendar,
             },
+            {
+              title: 'Progetti',
+              url: '/progetti',
+              icon: ListTodo,
+            },
           ],
         },
         {
