@@ -1,4 +1,4 @@
-import { addDays, isAfter, isBefore, differenceInDays, startOfDay, isSameDay } from 'date-fns'
+import { addDays, isAfter, isBefore, differenceInDays, startOfDay } from 'date-fns'
 import type { Task } from '../data/schema'
 
 /**
@@ -24,10 +24,6 @@ export function validateDependencies(
     const dependencyEndNormalized = startOfDay(dependencyTask.data_fine)
     const minStartDate = startOfDay(addDays(dependencyEndNormalized, 1))
     const taskStartNormalized = startOfDay(task.data_inizio)
-    
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/df847be0-25f0-4c0b-ba0a-7bc1fdb8a606',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dependencies.ts:22',message:'validateDependencies check',data:{taskId:task.id,taskName:task.nome,dependencyId:dependencyTask.id,dependencyName:dependencyTask.nome,dependencyEnd:dependencyTask.data_fine.toISOString(),dependencyEndNormalized:dependencyEndNormalized.toISOString(),minStartDate:minStartDate.toISOString(),taskStart:task.data_inizio.toISOString(),taskStartNormalized:taskStartNormalized.toISOString(),isBefore:isBefore(taskStartNormalized,minStartDate),isSameDay:isSameDay(taskStartNormalized,minStartDate)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
     
     if (isBefore(taskStartNormalized, minStartDate)) {
       errors.push(
@@ -212,10 +208,6 @@ export function validateTaskDependenciesOnMove(
   const maxEndNormalized = startOfDay(maxEndDate)
   const minStartDate = startOfDay(addDays(maxEndNormalized, 1))
   const newStartNormalized = startOfDay(newStartDate)
-  
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/df847be0-25f0-4c0b-ba0a-7bc1fdb8a606',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dependencies.ts:201',message:'validateTaskDependenciesOnMove check',data:{taskId:task.id,taskName:task.nome,maxEndDate:maxEndDate.toISOString(),maxEndNormalized:maxEndNormalized.toISOString(),minStartDate:minStartDate.toISOString(),newStartDate:newStartDate.toISOString(),newStartNormalized:newStartNormalized.toISOString(),isBefore:isBefore(newStartNormalized,minStartDate),isSameDay:isSameDay(newStartNormalized,minStartDate),valid:!isBefore(newStartNormalized,minStartDate)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-  // #endregion
   
   const valid = !isBefore(newStartNormalized, minStartDate)
 
