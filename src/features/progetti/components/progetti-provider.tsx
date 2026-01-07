@@ -17,7 +17,7 @@ import {
   saveTasksToStorage, 
   loadTasksFromStorage 
 } from '../data/storage'
-import { differenceInDays } from 'date-fns'
+import { differenceInDays, addDays } from 'date-fns'
 import {
   validateDependencies,
   calculateParentDates,
@@ -358,9 +358,12 @@ export const useProgettiStore = create<ProgettiState>((set, get) => ({
       return false
     }
 
-    // Calcola la durata originale
-    const duration = newEndDate.getTime() - newStartDate.getTime()
-    const newEnd = new Date(newStartDate.getTime() + duration)
+    // Mantieni la durata originale applicando lo stesso delta a entrambe le date
+    const daysDelta = differenceInDays(newStartDate, task.data_inizio)
+    const preservedEndDate = addDays(task.data_fine, daysDelta)
+
+    // Usa la data fine preservata invece di quella calcolata dalla durata passata
+    const newEnd = preservedEndDate
 
     // Trova i task che devono essere spostati
     const affectedTasks = getAffectedTasks(task, newStartDate, newEnd, tasks)
@@ -417,16 +420,21 @@ export const useProgettiStore = create<ProgettiState>((set, get) => ({
       return false
     }
 
+    // Preserva la durata originale del task
+    const originalTaskDuration = differenceInDays(task.data_fine, task.data_inizio)
+    const daysDeltaFromStart = differenceInDays(newStartDate, task.data_inizio)
+    const preservedEndDate = addDays(task.data_fine, daysDeltaFromStart)
+
     // Trova tutti i task che dipendono da questo task
     const dependentTasks = getDependentTasks(taskId, tasks)
     
-    // Aggiorna il task principale
+    // Aggiorna il task principale preservando la durata
     let updatedTasks = tasks.map((t) => {
       if (t.id === taskId) {
         return {
           ...t,
           data_inizio: newStartDate,
-          data_fine: newEndDate,
+          data_fine: preservedEndDate,
         }
       }
       return t
@@ -487,8 +495,12 @@ export const useProgettiStore = create<ProgettiState>((set, get) => ({
       return false
     }
 
-    // Calcola il delta (giorni di spostamento) basandosi sulla data fine
-    const daysDelta = differenceInDays(newEndDate, task.data_fine)
+    // Preserva la durata originale del task
+    const daysDeltaFromStart = differenceInDays(newStartDate, task.data_inizio)
+    const preservedEndDate = addDays(task.data_fine, daysDeltaFromStart)
+    
+    // Calcola il delta (giorni di spostamento) basandosi sulla data fine preservata
+    const daysDelta = differenceInDays(preservedEndDate, task.data_fine)
     
     // Trova tutti i task che dipendono da questo task
     const dependentTasks = getDependentTasks(taskId, tasks)
@@ -496,13 +508,13 @@ export const useProgettiStore = create<ProgettiState>((set, get) => ({
     // Sposta i task
     let updatedTasks = [...tasks]
     
-    // Aggiorna il task principale
+    // Aggiorna il task principale preservando la durata
     updatedTasks = updatedTasks.map((t) => {
       if (t.id === taskId) {
         return {
           ...t,
           data_inizio: newStartDate,
-          data_fine: newEndDate,
+          data_fine: preservedEndDate,
         }
       }
       return t

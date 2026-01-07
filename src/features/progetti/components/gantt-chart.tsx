@@ -93,16 +93,17 @@ export function GanttChart() {
     const containerWidth = container?.clientWidth || 1000
 
     // Calcola le nuove date basandosi sullo spostamento
-    const taskWidth = task.data_fine.getTime() - task.data_inizio.getTime()
     const totalRangeMs = dateRange.end.getTime() - dateRange.start.getTime()
     const totalRangeDays = totalRangeMs / (1000 * 60 * 60 * 24)
     const daysPerPixel = totalRangeDays / containerWidth
     const daysShifted = delta.x * daysPerPixel
 
-    const newStartDate = new Date(
-      task.data_inizio.getTime() + daysShifted * (1000 * 60 * 60 * 24)
-    )
-    const newEndDate = new Date(newStartDate.getTime() + taskWidth)
+    // Calcola il delta in giorni interi arrotondato
+    const daysDelta = Math.round(daysShifted)
+    
+    // Applica lo stesso delta sia a data_inizio che a data_fine per mantenere la durata
+    const newStartDate = addDays(task.data_inizio, daysDelta)
+    const newEndDate = addDays(task.data_fine, daysDelta)
 
     // Prima verifica se il task viola le sue dipendenze
     const dependencyValidation = validateTaskDependenciesOnMove(task, newStartDate, tasks)
