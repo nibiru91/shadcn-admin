@@ -34,10 +34,7 @@ export function DependencyArrow({
     const startElement = document.getElementById(`task-end-${fromTask.id}`)
     const endElement = document.getElementById(`task-start-${toTask.id}`)
 
-    if (!startElement || !endElement) {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/df847be0-25f0-4c0b-ba0a-7bc1fdb8a606',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dependency-arrow.tsx:30',message:'DependencyArrow elements not found',data:{fromTaskId:fromTask.id,toTaskId:toTask.id,startElementFound:!!startElement,endElementFound:!!endElement},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-      // #endregion
+        if (!startElement || !endElement) {
       return
     }
 
@@ -51,10 +48,6 @@ export function DependencyArrow({
     const startY = startRect.top - containerRect.top + startRect.height / 2
     const endX = endRect.left - containerRect.left + endRect.width / 2
     const endY = endRect.top - containerRect.top + endRect.height / 2
-
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/df847be0-25f0-4c0b-ba0a-7bc1fdb8a606',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dependency-arrow.tsx:45',message:'DependencyArrow positions calculated',data:{fromTaskId:fromTask.id,toTaskId:toTask.id,startX,startY,endX,endY,containerWidth:containerRect.width,containerHeight:containerRect.height},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-    // #endregion
 
     // Imposta le dimensioni dell'SVG
     svg.attr('width', containerRect.width).attr('height', containerRect.height)
@@ -105,10 +98,6 @@ export function DependencyArrow({
       .attr('points', '0 0, 10 3, 0 6')
       .attr('fill', 'hsl(var(--primary))')
       .attr('stroke', 'hsl(var(--primary))')
-
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/df847be0-25f0-4c0b-ba0a-7bc1fdb8a606',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dependency-arrow.tsx:75',message:'DependencyArrow line drawn',data:{fromTaskId:fromTask.id,toTaskId:toTask.id,pathData},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-    // #endregion
   }, [fromTask.id, toTask.id, fromTask.data_fine, toTask.data_inizio, rangeStart, rangeEnd, rowHeight, fromRowIndex, toRowIndex])
 
   // Aggiorna la linea quando la finestra viene ridimensionata o quando i task vengono spostati

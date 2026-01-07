@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import * as d3 from 'd3'
+import { useTheme } from '@/context/theme-provider'
 import type { Task } from '../data/schema'
 
 interface DependencyArrowsProps {
@@ -11,6 +12,7 @@ interface DependencyArrowsProps {
 export function DependencyArrows({ tasks, taskRows, containerId }: DependencyArrowsProps) {
   const svgRef = useRef<SVGSVGElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const { resolvedTheme } = useTheme()
 
   useEffect(() => {
     if (!svgRef.current || !containerRef.current) return
@@ -19,27 +21,24 @@ export function DependencyArrows({ tasks, taskRows, containerId }: DependencyArr
     svg.selectAll('*').remove() // Pulisci tutto
 
     const containerRect = containerRef.current.getBoundingClientRect()
-    
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/df847be0-25f0-4c0b-ba0a-7bc1fdb8a606',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dependency-arrows.tsx:25',message:'DependencyArrows container dimensions',data:{containerWidth:containerRect.width,containerHeight:containerRect.height,containerLeft:containerRect.left,containerTop:containerRect.top},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-    // #endregion
 
     svg.attr('width', containerRect.width).attr('height', containerRect.height)
 
-    // Ottieni il colore primario dal CSS
-    // Prova a ottenere il colore risolto direttamente da un elemento
-    const testElement = document.createElement('div')
-    testElement.style.color = 'hsl(var(--primary))'
-    document.body.appendChild(testElement)
-    const computedColor = getComputedStyle(testElement).color
-    document.body.removeChild(testElement)
-    
-    // Se non funziona, usa un colore di fallback
-    const strokeColor = computedColor && computedColor !== 'rgba(0, 0, 0, 0)' ? computedColor : '#3b82f6'
-
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/df847be0-25f0-4c0b-ba0a-7bc1fdb8a606',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dependency-arrows.tsx:40',message:'DependencyArrows color resolved',data:{computedColor,strokeColor},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
-    // #endregion
+    // Determina il colore in base al tema
+    let strokeColor: string
+    if (resolvedTheme === 'dark') {
+      strokeColor = '#ffffff'
+    } else {
+      // Ottieni il colore primario dal CSS
+      const testElement = document.createElement('div')
+      testElement.style.color = 'hsl(var(--primary))'
+      document.body.appendChild(testElement)
+      const computedColor = getComputedStyle(testElement).color
+      document.body.removeChild(testElement)
+      
+      // Se non funziona, usa un colore di fallback
+      strokeColor = computedColor && computedColor !== 'rgba(0, 0, 0, 0)' ? computedColor : '#3b82f6'
+    }
 
     // Crea i defs una sola volta per tutti i marker
     const defs = svg.append('defs')
@@ -67,7 +66,6 @@ export function DependencyArrows({ tasks, taskRows, containerId }: DependencyArr
       .y((d: [number, number]) => d[1])
 
     // Disegna tutte le frecce
-    let pathsCreated = 0
     tasks.forEach((task) => {
       if (task.dipendenze.length === 0) return
 
@@ -79,9 +77,6 @@ export function DependencyArrows({ tasks, taskRows, containerId }: DependencyArr
         const endElement = document.getElementById(`task-start-${task.id}`)
 
         if (!startElement || !endElement) {
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/df847be0-25f0-4c0b-ba0a-7bc1fdb8a606',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dependency-arrows.tsx:45',message:'DependencyArrows elements not found',data:{fromTaskId:dependencyTask.id,toTaskId:task.id,startElementFound:!!startElement,endElementFound:!!endElement},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-          // #endregion
           return
         }
 
@@ -103,11 +98,7 @@ export function DependencyArrows({ tasks, taskRows, containerId }: DependencyArr
           [endX, endY],
         ]
 
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/df847be0-25f0-4c0b-ba0a-7bc1fdb8a606',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dependency-arrows.tsx:70',message:'DependencyArrows drawing line',data:{fromTaskId:dependencyTask.id,toTaskId:task.id,startX,startY,endX,endY,pathData},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-        // #endregion
-
-        const pathElement = svg
+        svg
           .append('path')
           .datum(pathData)
           .attr('d', line)
@@ -118,21 +109,9 @@ export function DependencyArrows({ tasks, taskRows, containerId }: DependencyArr
           .attr('marker-end', 'url(#arrowhead)')
           .attr('data-from-task', dependencyTask.id)
           .attr('data-to-task', task.id)
-
-        pathsCreated++
-        
-        // #region agent log
-        const pathNode = pathElement.node()
-        fetch('http://127.0.0.1:7242/ingest/df847be0-25f0-4c0b-ba0a-7bc1fdb8a606',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dependency-arrows.tsx:85',message:'DependencyArrows path created',data:{fromTaskId:dependencyTask.id,toTaskId:task.id,pathCreated:!!pathNode,svgWidth:svg.attr('width'),svgHeight:svg.attr('height'),containerWidth:containerRect.width,containerHeight:containerRect.height,pathsCreated},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-        // #endregion
       })
     })
-
-    // #region agent log
-    const allPaths = svg.selectAll('path').nodes()
-    fetch('http://127.0.0.1:7242/ingest/df847be0-25f0-4c0b-ba0a-7bc1fdb8a606',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dependency-arrows.tsx:95',message:'DependencyArrows all paths created',data:{totalPaths:allPaths.length,svgWidth:svg.attr('width'),svgHeight:svg.attr('height'),containerWidth:containerRect.width,containerHeight:containerRect.height},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-    // #endregion
-  }, [tasks, taskRows, containerId])
+  }, [tasks, taskRows, containerId, resolvedTheme])
 
   // Funzione per aggiornare tutte le frecce
   const updateArrows = () => {
