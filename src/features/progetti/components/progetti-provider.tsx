@@ -56,21 +56,19 @@ function updateParentDatesRecursively(
   return updatedTasks
 }
 
-// Funzione helper per aggiornare i colori dei figli diretti che non sono padri
+// Funzione helper per aggiornare i colori di TUTTI i figli diretti (primo livello)
+// Forza il colore del padre su tutti i figli diretti, anche se sono padri a loro volta
 function updateChildrenColors(
   parentId: string,
   parentColor: NonNullable<Task['colore']> | null,
   allTasks: Task[]
 ): Task[] {
   return allTasks.map((task) => {
-    // Se è un figlio diretto e non è un padre, eredita il colore del padre
+    // Se è un figlio diretto (primo livello), forza il colore del padre
     if (task.task_padre_id === parentId) {
-      const isChildParent = allTasks.some((t) => t.task_padre_id === task.id)
-      if (!isChildParent) {
-        return {
-          ...task,
-          colore: parentColor,
-        }
+      return {
+        ...task,
+        colore: parentColor,
       }
     }
     return task
