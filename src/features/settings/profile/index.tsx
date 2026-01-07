@@ -4,8 +4,8 @@ import { ProfileForm } from './profile-form'
 export function SettingsProfile() {
   return (
     <ContentSection
-      title='Profile'
-      desc='This is how others will see you on the site.'
+      title='Profilo'
+      desc="Questo è come gli altri vedranno il tuo profilo nell'app."
     >
       <ProfileForm />
     </ContentSection>

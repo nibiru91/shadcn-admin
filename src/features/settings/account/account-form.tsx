@@ -1,18 +1,12 @@
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
-import { CaretSortIcon, CheckIcon } from '@radix-ui/react-icons'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { showSubmittedData } from '@/lib/show-submitted-data'
-import { cn } from '@/lib/utils'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
+import { useEffect } from 'react'
+import { supabase } from '@/lib/supabase'
+import { useUser } from '@/context/user-provider'
 import { Button } from '@/components/ui/button'
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command'
 import {
   Form,
   FormControl,
@@ -23,67 +17,245 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
-import { DatePicker } from '@/components/date-picker'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Separator } from '@/components/ui/separator'
 
-const languages = [
-  { label: 'English', value: 'en' },
-  { label: 'French', value: 'fr' },
-  { label: 'German', value: 'de' },
-  { label: 'Spanish', value: 'es' },
-  { label: 'Portuguese', value: 'pt' },
-  { label: 'Russian', value: 'ru' },
-  { label: 'Japanese', value: 'ja' },
-  { label: 'Korean', value: 'ko' },
-  { label: 'Chinese', value: 'zh' },
-] as const
+type Tenant = {
+  id: number
+  name: string | null
+  subscription_status: string | null
+  subscription_end_date: string | null
+  stripe_customer_id: string | null
+}
+
+type ProfiloFiscale = {
+  id: number
+  tenant_id: number | null
+  regime_fiscale: string | null
+  tipo_cassa_previdenziale: string | null
+  aliquota_cassa: number | null
+  soggetta_ritenuta: boolean | null
+  addebita_bollo: boolean | null
+  natura_iva_default: string | null
+}
 
 const accountFormSchema = z.object({
-  name: z
+  tenantName: z
     .string()
-    .min(1, 'Please enter your name.')
-    .min(2, 'Name must be at least 2 characters.')
-    .max(30, 'Name must not be longer than 30 characters.'),
-  dob: z.date('Please select your date of birth.'),
-  language: z.string('Please select a language.'),
+    .min(1, 'Il nome dell\'azienda è obbligatorio.')
+    .min(2, 'Il nome dell\'azienda deve essere di almeno 2 caratteri.')
+    .max(100, 'Il nome dell\'azienda non può superare i 100 caratteri.'),
+  addebitaBollo: z.boolean(),
 })
 
-type AccountFormValues = z.infer<typeof accountFormSchema>
+type AccountFormValues = z.input<typeof accountFormSchema>
 
-// This can come from your database or API.
-const defaultValues: Partial<AccountFormValues> = {
-  name: '',
+async function fetchTenant(tenantId: number): Promise<Tenant | null> {
+  const { data, error } = await supabase
+    .from('tenant')
+    .select('id, name, subscription_status, subscription_end_date, stripe_customer_id')
+    .eq('id', tenantId)
+    .maybeSingle()
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  return data
+}
+
+async function fetchProfiloFiscale(tenantId: number): Promise<ProfiloFiscale | null> {
+  const { data, error } = await supabase
+    .from('profili_fiscali')
+    .select('*')
+    .eq('tenant_id', tenantId)
+    .single()
+
+  if (error) {
+    if (error.code === 'PGRST116') {
+      return null
+    }
+    throw new Error(error.message)
+  }
+
+  return data
 }
 
 export function AccountForm() {
-  const form = useForm<AccountFormValues>({
-    resolver: zodResolver(accountFormSchema),
-    defaultValues,
+  const { user, isLoading: isLoadingUser } = useUser()
+  const queryClient = useQueryClient()
+
+  const tenantId = user?.tenant_id
+
+  const {
+    data: tenant,
+    isLoading: isLoadingTenant,
+  } = useQuery({
+    queryKey: ['tenant', tenantId],
+    queryFn: () => fetchTenant(tenantId!),
+    enabled: !!tenantId,
+    staleTime: Infinity,
   })
 
-  function onSubmit(data: AccountFormValues) {
-    showSubmittedData(data)
+  const {
+    data: profiloFiscale,
+    isLoading: isLoadingProfiloFiscale,
+  } = useQuery({
+    queryKey: ['profilo-fiscale', tenantId],
+    queryFn: () => fetchProfiloFiscale(tenantId!),
+    enabled: !!tenantId,
+    staleTime: Infinity,
+  })
+
+  const form = useForm<AccountFormValues>({
+    resolver: zodResolver(accountFormSchema),
+    defaultValues: {
+      tenantName: '',
+      addebitaBollo: false,
+    },
+    mode: 'onChange',
+  })
+
+  // Popola il form quando i dati sono disponibili
+  useEffect(() => {
+    if (tenant && profiloFiscale && !isLoadingTenant && !isLoadingProfiloFiscale) {
+      form.reset({
+        tenantName: tenant.name || '',
+        addebitaBollo: profiloFiscale.addebita_bollo ?? false,
+      })
+    }
+  }, [tenant, profiloFiscale, isLoadingTenant, isLoadingProfiloFiscale, form])
+
+  const isLoading = isLoadingUser || isLoadingTenant || isLoadingProfiloFiscale
+
+  async function onSubmit(data: AccountFormValues) {
+    if (!tenantId) {
+      toast.error('Tenant non trovato')
+      return
+    }
+
+    if (!tenant) {
+      toast.error('Dati azienda non trovati')
+      return
+    }
+
+    if (!profiloFiscale) {
+      toast.error('Profilo fiscale non trovato')
+      return
+    }
+
+    try {
+      // Parse through schema to apply defaults
+      const parsedData = accountFormSchema.parse(data)
+      
+      // Aggiorna tenant.name
+      const { error: tenantError } = await supabase
+        .from('tenant')
+        .update({
+          name: parsedData.tenantName || null,
+        })
+        .eq('id', tenantId)
+
+      if (tenantError) throw tenantError
+
+      // Aggiorna profili_fiscali.addebita_bollo
+      const { error: profiloError } = await supabase
+        .from('profili_fiscali')
+        .update({
+          addebita_bollo: parsedData.addebitaBollo,
+        })
+        .eq('tenant_id', tenantId)
+
+      if (profiloError) throw profiloError
+
+      toast.success('Impostazioni account aggiornate con successo')
+      
+      // Invalida le query per aggiornare i dati
+      await queryClient.invalidateQueries({ queryKey: ['tenant', tenantId] })
+      await queryClient.invalidateQueries({ queryKey: ['profilo-fiscale', tenantId] })
+    } catch (error: any) {
+      toast.error(error.message || 'Errore durante l\'aggiornamento delle impostazioni')
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className='space-y-8'>
+        <div className='space-y-2'>
+          <Skeleton className='h-4 w-32' />
+          <Skeleton className='h-10 w-full' />
+        </div>
+        <div className='space-y-2'>
+          <Skeleton className='h-4 w-48' />
+          <Skeleton className='h-6 w-6' />
+        </div>
+        <Separator />
+        <div className='space-y-4'>
+          <Skeleton className='h-6 w-32' />
+          <div className='space-y-2'>
+            <Skeleton className='h-4 w-40' />
+            <Skeleton className='h-6 w-6' />
+          </div>
+          <div className='space-y-2'>
+            <Skeleton className='h-4 w-48' />
+            <Skeleton className='h-6 w-6' />
+          </div>
+          <div className='space-y-2'>
+            <Skeleton className='h-4 w-32' />
+            <Skeleton className='h-10 w-full' />
+          </div>
+          <div className='space-y-2'>
+            <Skeleton className='h-4 w-40' />
+            <Skeleton className='h-6 w-6' />
+          </div>
+        </div>
+        <Skeleton className='h-10 w-40' />
+      </div>
+    )
+  }
+
+  if (!user || !tenantId) {
+    return (
+      <div className='text-center py-8'>
+        <p className='text-muted-foreground'>
+          Utente o tenant non trovato. Contatta l'amministratore.
+        </p>
+      </div>
+    )
+  }
+
+  if (!tenant || !profiloFiscale) {
+    return (
+      <div className='text-center py-8'>
+        <p className='text-muted-foreground'>
+          Dati azienda o profilo fiscale non trovati. Contatta l'amministratore.
+        </p>
+      </div>
+    )
   }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-8'>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className='space-y-8'
+      >
         <FormField
           control={form.control}
-          name='name'
+          name='tenantName'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Name</FormLabel>
+              <FormLabel>Nome Azienda</FormLabel>
               <FormControl>
-                <Input placeholder='Your name' {...field} />
+                <Input 
+                  placeholder='Nome della tua azienda' 
+                  {...field}
+                  value={field.value ?? ''}
+                />
               </FormControl>
               <FormDescription>
-                This is the name that will be displayed on your profile and in
-                emails.
+                Il nome della tua azienda.
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -91,82 +263,94 @@ export function AccountForm() {
         />
         <FormField
           control={form.control}
-          name='dob'
+          name='addebitaBollo'
           render={({ field }) => (
-            <FormItem className='flex flex-col'>
-              <FormLabel>Date of birth</FormLabel>
-              <DatePicker selected={field.value} onSelect={field.onChange} />
-              <FormDescription>
-                Your date of birth is used to calculate your age.
-              </FormDescription>
-              <FormMessage />
+            <FormItem className='flex flex-row items-start space-x-3 space-y-0'>
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <div className='space-y-1 leading-none'>
+                <FormLabel>Addebita Bollo 2 Euro a clienti</FormLabel>
+                <FormDescription>
+                  Se attivo, il bollo di 2 euro verrà addebitato ai clienti.
+                </FormDescription>
+              </div>
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name='language'
-          render={({ field }) => (
-            <FormItem className='flex flex-col'>
-              <FormLabel>Language</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant='outline'
-                      role='combobox'
-                      className={cn(
-                        'w-[200px] justify-between',
-                        !field.value && 'text-muted-foreground'
-                      )}
-                    >
-                      {field.value
-                        ? languages.find(
-                            (language) => language.value === field.value
-                          )?.label
-                        : 'Select language'}
-                      <CaretSortIcon className='ms-2 h-4 w-4 shrink-0 opacity-50' />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className='w-[200px] p-0'>
-                  <Command>
-                    <CommandInput placeholder='Search language...' />
-                    <CommandEmpty>No language found.</CommandEmpty>
-                    <CommandGroup>
-                      <CommandList>
-                        {languages.map((language) => (
-                          <CommandItem
-                            value={language.label}
-                            key={language.value}
-                            onSelect={() => {
-                              form.setValue('language', language.value)
-                            }}
-                          >
-                            <CheckIcon
-                              className={cn(
-                                'size-4',
-                                language.value === field.value
-                                  ? 'opacity-100'
-                                  : 'opacity-0'
-                              )}
-                            />
-                            {language.label}
-                          </CommandItem>
-                        ))}
-                      </CommandList>
-                    </CommandGroup>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-              <FormDescription>
-                This is the language that will be used in the dashboard.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <Button type='submit'>Update account</Button>
+        <Separator />
+        <div className='space-y-6'>
+          <div>
+            <h3 className='text-lg font-medium'>Dettagli Fiscali</h3>
+            <p className='text-sm text-muted-foreground'>
+              Informazioni fiscali dell'azienda (non modificabili)
+            </p>
+          </div>
+          <div className='space-y-4'>
+            <div className='flex items-center space-x-3'>
+              <Checkbox
+                checked={true}
+                disabled
+                className='cursor-not-allowed'
+              />
+              <div className='space-y-1 leading-none'>
+                <label className='text-sm font-medium cursor-not-allowed'>
+                  Regime Forfettario
+                </label>
+                <p className='text-sm text-muted-foreground'>
+                  Regime fiscale forfettario attivo
+                </p>
+              </div>
+            </div>
+            <div className='flex items-center space-x-3'>
+              <Checkbox
+                checked={profiloFiscale.soggetta_ritenuta ?? false}
+                disabled
+                className='cursor-not-allowed'
+              />
+              <div className='space-y-1 leading-none'>
+                <label className='text-sm font-medium cursor-not-allowed'>
+                  Soggetto a Ritenuta d'acconto
+                </label>
+                <p className='text-sm text-muted-foreground'>
+                  Indica se l'azienda è soggetta a ritenuta d'acconto
+                </p>
+              </div>
+            </div>
+            <div className='space-y-2'>
+              <label className='text-sm font-medium cursor-not-allowed'>
+                Natura IVA
+              </label>
+              <Input
+                value={profiloFiscale.natura_iva_default || 'N2.2'}
+                disabled
+                className='bg-muted cursor-not-allowed'
+              />
+              <p className='text-sm text-muted-foreground'>
+                Natura IVA di default per le fatture
+              </p>
+            </div>
+            <div className='flex items-center space-x-3'>
+              <Checkbox
+                checked={false}
+                disabled
+                className='cursor-not-allowed'
+              />
+              <div className='space-y-1 leading-none'>
+                <label className='text-sm font-medium cursor-not-allowed'>
+                  Cassa Previdenziale
+                </label>
+                <p className='text-sm text-muted-foreground'>
+                  Indica se è attiva la cassa previdenziale
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <Button type='submit'>Aggiorna impostazioni</Button>
       </form>
     </Form>
   )

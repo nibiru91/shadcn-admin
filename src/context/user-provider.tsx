@@ -9,6 +9,7 @@ type UserProfile = {
   ruolo: string | null
   email: string | null
   auth_id: string | null
+  tenant_id: number | null
 }
 
 type UserProviderState = {
@@ -43,7 +44,7 @@ async function fetchCurrentUser(): Promise<UserProfile | null> {
   // Query su users_profile usando auth_id
   const { data, error } = await supabase
     .from('users_profile')
-    .select('id, name, surname, ruolo, email, auth_id')
+    .select('id, name, surname, ruolo, email, auth_id, tenant_id')
     .eq('auth_id', authId)
     .single()
 

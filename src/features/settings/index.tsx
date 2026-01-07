@@ -53,10 +53,10 @@ export function Settings() {
       <Main fixed>
         <div className='space-y-0.5'>
           <h1 className='text-2xl font-bold tracking-tight md:text-3xl'>
-            Settings
+            Impostazioni
           </h1>
           <p className='text-muted-foreground'>
-            Manage your account settings and set e-mail preferences.
+            Gestisci le tue impostazioni account e le preferenze.
           </p>
         </div>
         <Separator className='my-4 lg:my-6' />

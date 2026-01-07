@@ -1,9 +1,11 @@
 import { z } from 'zod'
-import { useFieldArray, useForm } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Link } from '@tanstack/react-router'
-import { showSubmittedData } from '@/lib/show-submitted-data'
-import { cn } from '@/lib/utils'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
+import { useEffect } from 'react'
+import { supabase } from '@/lib/supabase'
+import { useUser } from '@/context/user-provider'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -15,162 +17,183 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
+import { Skeleton } from '@/components/ui/skeleton'
 
 const profileFormSchema = z.object({
-  username: z
-    .string('Please enter your username.')
-    .min(2, 'Username must be at least 2 characters.')
-    .max(30, 'Username must not be longer than 30 characters.'),
-  email: z.email({
-    error: (iss) =>
-      iss.input === undefined
-        ? 'Please select an email to display.'
-        : undefined,
-  }),
-  bio: z.string().max(160).min(4),
-  urls: z
-    .array(
-      z.object({
-        value: z.url('Please enter a valid URL.'),
-      })
-    )
-    .optional(),
+  name: z
+    .string()
+    .min(2, 'Il nome deve essere di almeno 2 caratteri.')
+    .max(50, 'Il nome non può superare i 50 caratteri.')
+    .optional()
+    .nullable(),
+  surname: z
+    .string()
+    .min(2, 'Il cognome deve essere di almeno 2 caratteri.')
+    .max(50, 'Il cognome non può superare i 50 caratteri.')
+    .optional()
+    .nullable(),
 })
 
-type ProfileFormValues = z.infer<typeof profileFormSchema>
+type ProfileFormValues = z.input<typeof profileFormSchema>
 
-// This can come from your database or API.
-const defaultValues: Partial<ProfileFormValues> = {
-  bio: 'I own a computer.',
-  urls: [
-    { value: 'https://shadcn.com' },
-    { value: 'http://twitter.com/shadcn' },
-  ],
+async function fetchAuthEmail(): Promise<string | null> {
+  const { data: sessionData, error } = await supabase.auth.getSession()
+  
+  if (error) throw new Error(error.message)
+  return sessionData.session?.user?.email || null
 }
 
 export function ProfileForm() {
+  const { user, isLoading: isLoadingUser } = useUser()
+  const queryClient = useQueryClient()
+
+  const {
+    data: authEmail,
+    isLoading: isLoadingEmail,
+  } = useQuery({
+    queryKey: ['auth-email'],
+    queryFn: fetchAuthEmail,
+    staleTime: Infinity,
+  })
+
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
-    defaultValues,
+    defaultValues: {
+      name: null,
+      surname: null,
+    },
     mode: 'onChange',
   })
 
-  const { fields, append } = useFieldArray({
-    name: 'urls',
-    control: form.control,
-  })
+  // Popola il form quando i dati sono disponibili
+  useEffect(() => {
+    if (user && !isLoadingUser) {
+      form.reset({
+        name: user.name || null,
+        surname: user.surname || null,
+      })
+    }
+  }, [user, isLoadingUser, form])
+
+  const isLoading = isLoadingUser || isLoadingEmail
+
+  async function onSubmit(data: ProfileFormValues) {
+    if (!user?.id) {
+      toast.error('Utente non trovato')
+      return
+    }
+
+    try {
+      // Parse through schema to apply defaults
+      const parsedData = profileFormSchema.parse(data)
+      
+      const { error } = await supabase
+        .from('users_profile')
+        .update({
+          name: parsedData.name || null,
+          surname: parsedData.surname || null,
+        })
+        .eq('id', user.id)
+
+      if (error) throw error
+
+      toast.success('Profilo aggiornato con successo')
+      
+      // Invalida la query del current user per aggiornare i dati
+      await queryClient.invalidateQueries({ queryKey: ['current-user'] })
+    } catch (error: any) {
+      toast.error(error.message || 'Errore durante l\'aggiornamento del profilo')
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className='space-y-8'>
+        <div className='space-y-2'>
+          <Skeleton className='h-4 w-24' />
+          <Skeleton className='h-10 w-full' />
+        </div>
+        <div className='space-y-2'>
+          <Skeleton className='h-4 w-24' />
+          <Skeleton className='h-10 w-full' />
+        </div>
+        <div className='space-y-2'>
+          <Skeleton className='h-4 w-24' />
+          <Skeleton className='h-10 w-full' />
+        </div>
+        <Skeleton className='h-10 w-32' />
+      </div>
+    )
+  }
+
+  if (!user) {
+    return (
+      <div className='text-center py-8'>
+        <p className='text-muted-foreground'>
+          Profilo non trovato. Contatta l'amministratore.
+        </p>
+      </div>
+    )
+  }
 
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit((data) => showSubmittedData(data))}
+        onSubmit={form.handleSubmit(onSubmit)}
         className='space-y-8'
       >
         <FormField
           control={form.control}
-          name='username'
+          name='name'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Username</FormLabel>
+              <FormLabel>Nome</FormLabel>
               <FormControl>
-                <Input placeholder='shadcn' {...field} />
-              </FormControl>
-              <FormDescription>
-                This is your public display name. It can be your real name or a
-                pseudonym. You can only change this once every 30 days.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name='email'
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder='Select a verified email to display' />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value='m@example.com'>m@example.com</SelectItem>
-                  <SelectItem value='m@google.com'>m@google.com</SelectItem>
-                  <SelectItem value='m@support.com'>m@support.com</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormDescription>
-                You can manage verified email addresses in your{' '}
-                <Link to='/'>email settings</Link>.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name='bio'
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Bio</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder='Tell us a little bit about yourself'
-                  className='resize-none'
+                <Input 
+                  placeholder='Il tuo nome' 
                   {...field}
+                  value={field.value ?? ''}
                 />
               </FormControl>
               <FormDescription>
-                You can <span>@mention</span> other users and organizations to
-                link to them.
+                Il tuo nome di battesimo.
               </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
-        <div>
-          {fields.map((field, index) => (
-            <FormField
-              control={form.control}
-              key={field.id}
-              name={`urls.${index}.value`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className={cn(index !== 0 && 'sr-only')}>
-                    URLs
-                  </FormLabel>
-                  <FormDescription className={cn(index !== 0 && 'sr-only')}>
-                    Add links to your website, blog, or social media profiles.
-                  </FormDescription>
-                  <FormControl className={cn(index !== 0 && 'mt-1.5')}>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          ))}
-          <Button
-            type='button'
-            variant='outline'
-            size='sm'
-            className='mt-2'
-            onClick={() => append({ value: '' })}
-          >
-            Add URL
-          </Button>
+        <FormField
+          control={form.control}
+          name='surname'
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Cognome</FormLabel>
+              <FormControl>
+                <Input 
+                  placeholder='Il tuo cognome' 
+                  {...field}
+                  value={field.value ?? ''}
+                />
+              </FormControl>
+              <FormDescription>
+                Il tuo cognome.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <div className='space-y-2'>
+          <FormLabel>Email di iscrizione</FormLabel>
+          <Input 
+            value={authEmail || ''}
+            disabled
+            className='bg-muted cursor-not-allowed'
+          />
+          <p className='text-sm text-muted-foreground'>
+            L'email utilizzata per l'iscrizione. Non può essere modificata da qui.
+          </p>
         </div>
-        <Button type='submit'>Update profile</Button>
+        <Button type='submit'>Aggiorna profilo</Button>
       </form>
     </Form>
   )
