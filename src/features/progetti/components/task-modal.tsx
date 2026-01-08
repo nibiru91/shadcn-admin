@@ -43,11 +43,11 @@ import {
 } from '@/components/ui/alert-dialog'
 import { DatePicker } from '@/components/date-picker'
 import { useProgettiStore } from './progetti-provider'
-import { taskFormSchema, type TaskFormData, type Priorita, type Colore } from '../data/schema'
+import { taskFormSchema, type TaskFormData, type Priorita } from '../data/schema'
 import { validateDependencies, validateTaskDependenciesOnMove, getDependentTasks } from '../utils/dependencies'
 import { DependencyErrorDialog } from './dependency-error-dialog'
 import { DependencyConfirmDialog } from './dependency-confirm-dialog'
-import { differenceInDays, addDays, isBefore } from 'date-fns'
+import { differenceInDays, addDays } from 'date-fns'
 import { colorOptions } from '../utils/colors'
 import type { Task } from '../data/schema'
 

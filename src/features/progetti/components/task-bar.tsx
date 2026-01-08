@@ -1,14 +1,13 @@
 import { useDraggable } from '@dnd-kit/core'
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import type { Task, Priorita } from '../data/schema'
+import type { Task } from '../data/schema'
 import { calculateDatePosition, calculateTaskWidth } from '../utils/dates'
 import { colorMap, priorityColors } from '../utils/colors'
 
 interface TaskBarProps {
   task: Task
   allTasks: Task[]
-  visibleTasks: Task[]
   rangeStart: Date
   rangeEnd: Date
   rowIndex: number
@@ -40,7 +39,6 @@ function getTaskColor(task: Task, allTasks: Task[]): { bg: string; border: strin
 export function TaskBar({
   task,
   allTasks,
-  visibleTasks,
   rangeStart,
   rangeEnd,
   rowIndex,

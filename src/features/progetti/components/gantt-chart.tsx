@@ -9,12 +9,11 @@ import {
   useSensors,
   closestCenter,
 } from '@dnd-kit/core'
-import { differenceInDays, addDays, isBefore, startOfDay, subDays } from 'date-fns'
+import { differenceInDays, addDays, startOfDay, subDays } from 'date-fns'
 import { ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useProgettiStore } from './progetti-provider'
 import { getDateRange, generateTimelineDates, formatTimelineDate, isWeekend, taskOverlapsRange } from '../utils/dates'
-import { getAffectedTasks } from '../utils/dependencies'
 import { TaskBar } from './task-bar'
 import { DependencyArrows } from './dependency-arrows'
 import { DependencyConfirmDialog } from './dependency-confirm-dialog'
@@ -217,16 +216,16 @@ export function GanttChart() {
     toggleTaskCollapse(taskId)
   }
 
-  const activeTask = activeTaskId
-    ? visibleTasks.find((t) => t.id === activeTaskId)
-    : null
-
   // Filtra i task visibili in base al range di date visualizzato (solo per rendering barre)
   const visibleTasks = useMemo(() => {
     return allVisibleTasks.filter((task) =>
       taskOverlapsRange(task.data_inizio, task.data_fine, dateRange.start, dateRange.end)
     )
   }, [allVisibleTasks, dateRange])
+
+  const activeTask = activeTaskId
+    ? visibleTasks.find((t) => t.id === activeTaskId)
+    : null
   
   // Set di task IDs che sono nel range (per filtrare le barre da renderizzare)
   const visibleTaskIds = useMemo(() => {
@@ -276,7 +275,7 @@ export function GanttChart() {
           
           {/* Nomi task */}
           <div className='relative'>
-            {taskRows.map(({ task, index, depth }) => {
+            {taskRows.map(({ task, depth }) => {
               const isParent = hasChildren(task.id)
               return (
                 <div
@@ -420,7 +419,6 @@ export function GanttChart() {
                     key={task.id}
                     task={task}
                     allTasks={tasks}
-                    visibleTasks={visibleTasks}
                     rangeStart={dateRange.start}
                     rangeEnd={dateRange.end}
                     rowIndex={index}

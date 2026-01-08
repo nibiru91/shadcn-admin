@@ -351,7 +351,7 @@ export const useProgettiStore = create<ProgettiState>((set, get) => ({
     saveTasksToStorage(updatedTasks)
   },
 
-  moveTask: async (taskId: string, newStartDate: Date, newEndDate: Date) => {
+  moveTask: async (taskId: string, newStartDate: Date, _newEndDate: Date) => {
     const { tasks } = get()
     const task = tasks.find((t) => t.id === taskId)
     
@@ -411,7 +411,7 @@ export const useProgettiStore = create<ProgettiState>((set, get) => ({
   moveTaskWithDelta: async (
     taskId: string,
     newStartDate: Date,
-    newEndDate: Date,
+    _newEndDate: Date,
     daysDelta: number
   ) => {
     const { tasks } = get()
@@ -422,7 +422,6 @@ export const useProgettiStore = create<ProgettiState>((set, get) => ({
     }
 
     // Preserva la durata originale del task
-    const originalTaskDuration = differenceInDays(task.data_fine, task.data_inizio)
     const daysDeltaFromStart = differenceInDays(newStartDate, task.data_inizio)
     const preservedEndDate = addDays(task.data_fine, daysDeltaFromStart)
 
@@ -486,7 +485,7 @@ export const useProgettiStore = create<ProgettiState>((set, get) => ({
   moveTaskWithConfirmation: async (
     taskId: string,
     newStartDate: Date,
-    newEndDate: Date,
+    _newEndDate: Date,
     confirmedDependentIds: string[]
   ) => {
     const { tasks } = get()
